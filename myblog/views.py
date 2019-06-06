@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views.generic import View
+from django.urls import reverse
 from .models import User
+from . import forms
 # Create your views here.
 
 
@@ -14,12 +16,13 @@ class Register(View):
         return render(request, 'blog/register.html')
 
     def post(self, request):
-        email = request.POST.get('email').strip()
-        name = request.POST.get('name').strip()
-        password = request.POST.get('password').strip()
+        register_form = forms.RegisterForm(request.POST)
+        if register_form.is_valid():
+            pass
+        else:
+            message = '请检查填写的内容！'
+            return render(request, reverse('register'), locals())
         
-
-
 
 def login(request):
     pass
