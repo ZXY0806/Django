@@ -4,12 +4,12 @@ from django.db import models
 
 
 class User(models.Model):
-    gender = (('male', '男'), ('female', '女'))
+    # gender = (('male', '男'), ('female', '女'))
     username = models.CharField(max_length=128, unique=True)
     password = models.CharField(max_length=256)
     email = models.EmailField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    sex = models.CharField(max_length=32, choices=gender, default='男')
+    # sex = models.CharField(max_length=32, choices=gender, default='男')
     has_confirmed = models.BooleanField(default=False)
 
     def __str__(self):
