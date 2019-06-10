@@ -1,5 +1,5 @@
 
-{% extends '__base__.html' %}
+{% extends 'blog/__base__.html' %}
 
 {% block title %}注册{% endblock %}
 
@@ -40,12 +40,13 @@ $(function () {
                 $form.postJSON('{% url 'register' %}', {
                     name: this.name.trim(),
                     email: email,
-                    passwd: sha1(email + ':' + this.password1).toString()
+                    password1: sha1(email + ':' + this.password1).toString(),
+                    password2: sha1(email + ':' + this.password2).toString()
                 }, function (err, r) {
                     if (err) {
                         return $form.showFormError(err);
                     }
-                    return location.assign('{% url 'index' %}');
+                    //return location.assign('{% url 'index' %}');
                 });
             }
         }
@@ -60,6 +61,10 @@ $(function () {
     <div class="uk-width-2-3">
         <h1>欢迎注册！</h1>
         <form id="vm" v-on:submit="submit" class="uk-form uk-form-stacked">
+            {% if message %}
+                <div class="uk-alert uk-alert-danger">{{ message }}</div>
+            {% endif %}
+            {% csrf_token %}
             <div class="uk-alert uk-alert-danger uk-hidden"></div>
             <div class="uk-form-row">
                 <label class="uk-form-label">名字:</label>
