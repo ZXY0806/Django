@@ -8,3 +8,6 @@ class RegisterForm(forms.Form):
     password2 = forms.CharField(label='重复口令:', max_length=256, widget=forms.PasswordInput)
 
 
+class LoginForm(forms.Form):
+    username = forms.CharField(label='名字:', max_length=128, widget=forms.TextInput)
+    password = forms.CharField(label='输入口令:', max_length=256, widget=forms.PasswordInput)

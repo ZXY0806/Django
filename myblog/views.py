@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views.generic import View
 from django.urls import reverse
+from .common import hash_it
 from . import models
 from . import forms
 # Create your views here.
@@ -41,18 +42,48 @@ class Register(View):
                 new_user = models.User()
                 new_user.username = username
                 new_user.email = email
-                new_user.password = password2
-
+                new_user.password = hash_it(password1)
+                new_user.save()
+                return redirect(reverse('login'))
         else:
             return render(request, 'blog/register.html', locals())
-        
 
-def login(request):
-    pass
-    return render(request, 'blog/login.html')
+
+class Login(View):
+    def get(self, request):
+        if request.session.get('is_login'):
+            return redirect(reverse('index'))
+        return render(request, 'blog/login.html')
+
+    def post(self, request):
+        login_form = forms.LoginForm(request.POST)
+        message = '用户名密码错误！'
+        if login_form.is_valid():
+            username = login_form.cleaned_data.get('username')
+            password = login_form.cleaned_data.get('password')
+            user = models.User.objects.filter(username=username)
+            if user:
+                hash_password = hash_it(password)
+                if hash_password != user.password:
+                    message = '密码错误！'
+                    return render(request, 'blog/login.html', locals())
+                else:
+                    request.session['is_login'] = True
+                    request.session['user_id'] = user.id
+                    request.session['user_name'] = user.username
+                    # login_user = user
+                    return render(request, 'blog/index.html', locals())
+            else:
+                message = '用户不存在！'
+                return render(request, 'blog/login.html', locals())
+        else:
+            return render(request, 'blog/login.html', locals())
 
 
 def logout(request):
-    pass
-    return redirect('/login/')
+    if request.method == 'GET':
+        if not request.session.get('is_login'):
+            return redirect(reverse('login'))
+        request.session.flush()
+        return redirect(reverse('login'))
 

@@ -29,8 +29,8 @@
             </ul>
             <div class="uk-navbar-flip">
                 <ul class="uk-navbar-nav">
-                {% if log_user %}
-                    <li><a href="#0"><i class="uk-icon-user"></i> {{ log_user.name }}</a></li>
+                {% if request.session.user_name %}
+                    <li><a href="#0"><i class="uk-icon-user"></i> {{ request.session.user_name }}</a></li>
                     <li><a href="{% url 'logout' %}"><i class="uk-icon-sign-out"></i> 登出</a></li>
                 {% else %}
                     <li><a href="{% url 'login' %}"><i class="uk-icon-sign-in"></i> 登陆</a></li>
