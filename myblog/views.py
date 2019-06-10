@@ -17,7 +17,7 @@ class Register(View):
         email = request.POST.get('email').strip()
         name = request.POST.get('name').strip()
         password = request.POST.get('password').strip()
-        
+
 
 
 
