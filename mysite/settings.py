@@ -135,3 +135,9 @@ EMAIL_HOST = 'smtp.sina.com'
 EMAIL_PORT = 25
 EMAIL_HOST_USER = 'zxy18713506826@sina.com'
 EMAIL_HOST_PASSWORD = pwd
+
+# 邮件验证有效期天数
+CONFIRM_DAYS = 1
+
+# 网站地址
+WEBSITE = '172.16.3.111:9000'

@@ -44,6 +44,8 @@ class Register(View):
                 new_user.email = email
                 new_user.password = hash_it(password1)
                 new_user.save()
+                message = '欢迎注册，请前往邮箱确认！'
+                
                 return redirect(reverse('login'))
         else:
             return render(request, 'blog/register.html', locals())

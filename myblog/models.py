@@ -22,6 +22,17 @@ class User(models.Model):
         verbose_name_plural = '用户'
 
 
+class ConfirmString(models.Model):
+    code = models.CharField(max_length=256)
+    user = models.OneToOneField('User', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.user.username + ': ' + self.code
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = '确认码'
+        verbose_name_plural = '确认码'
 
 
