@@ -2,9 +2,11 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views.generic import View
 from django.urls import reverse
-from .common import hash_it
+from . import common
 from . import models
 from . import forms
+from datetime import datetime, timedelta
+
 # Create your views here.
 
 
@@ -42,13 +44,37 @@ class Register(View):
                 new_user = models.User()
                 new_user.username = username
                 new_user.email = email
-                new_user.password = hash_it(password1)
+                new_user.password = common.hash_it(password1)
                 new_user.save()
                 message = '欢迎注册，请前往邮箱确认！'
-                
-                return redirect(reverse('login'))
+                confirm_code = common.generate_confirm_string(new_user)
+                res = common.send_confirm_email(confirm_code, email)
+                print(res)
+                return render(request, 'blog/confirm.html', locals())
         else:
             return render(request, 'blog/register.html', locals())
+
+
+def confirm(self, request):
+    code = request.GET.get('code', None)
+    if code:
+        try:
+            confirm_string = models.ConfirmString.objects.get(code=code)
+            now = datetime.now()
+            c_time = confirm_string.created_at
+            if now > c_time + timedelta(days=1):
+                message = '您的邮件已经过期！请重新注册!'
+                confirm_string.user.delete()
+                return render(request, 'blog/confirm.html', locals())
+            else:
+                confirm_string.user.has_confirmed = True
+                confirm_string.user.save()
+                confirm_string.delete()
+                message = '感谢确认，请使用账户登录!'
+                return render(request, 'blog/confirm.html', locals())
+        except:
+            message = '无效的确认请求!'
+            return render(request, 'blog/confirm.html', locals())
 
 
 class Login(View):
@@ -65,7 +91,10 @@ class Login(View):
             password = login_form.cleaned_data.get('password')
             user = models.User.objects.filter(username=username)
             if user:
-                hash_password = hash_it(password)
+                if not user.has_confirmed:
+                    message = '该用户尚未确认，请邮件确认后登录！'
+                    return render(request, 'blog/login.html', locals())
+                hash_password = common.hash_it(password)
                 if hash_password != user.password:
                     message = '密码错误！'
                     return render(request, 'blog/login.html', locals())
