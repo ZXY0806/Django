@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 
 
 def index(request):
+    # 修改首页视图
     return HttpResponse('HelloWorld')
 
 
@@ -31,26 +32,26 @@ class Register(View):
             if password1 != password2:
                 message = '两次输入的密码不同！'
                 return render(request, 'blog/register.html', locals())
-            else:
-                same_name_user = models.User.objects.filter(username=username)
-                if same_name_user:
-                    message = '用户名已经存在'
-                    return render(request, 'blog/register.html', locals())
-                same_email_user = models.User.objects.filter(email=email)
-                if same_email_user:
-                    message = '该邮箱已经被注册了！'
-                    return render(request, 'blog/register.html', locals())
+            # 此处应添加用户名校验，只能为大小写字母、数字或下划线，不能为汉字，避免url为汉字时报错
+            same_name_user = models.User.objects.filter(username=username)
+            if same_name_user:
+                message = '用户名已经存在'
+                return render(request, 'blog/register.html', locals())
+            same_email_user = models.User.objects.filter(email=email)
+            if same_email_user:
+                message = '该邮箱已经被注册了！'
+                return render(request, 'blog/register.html', locals())
 
-                new_user = models.User()
-                new_user.username = username
-                new_user.email = email
-                new_user.password = common.hash_it(password1)
-                new_user.save()
-                message = '欢迎注册，请前往邮箱确认！'
-                confirm_code = common.generate_confirm_string(new_user)
-                res = common.send_confirm_email(confirm_code, email)
-                print(res)
-                return render(request, 'blog/confirm.html', locals())
+            new_user = models.User()
+            new_user.username = username
+            new_user.email = email
+            new_user.password = common.hash_it(password1)
+            new_user.save()
+            message = '欢迎注册，请前往邮箱确认！'
+            confirm_code = common.generate_confirm_string(new_user)
+            res = common.send_confirm_email(confirm_code, email)
+            print(res)
+            return render(request, 'blog/confirm.html', locals())
         else:
             return render(request, 'blog/register.html', locals())
 
@@ -103,7 +104,7 @@ class Login(View):
                     request.session['user_id'] = user.id
                     request.session['user_name'] = user.username
                     # login_user = user
-                    return render(request, 'blog/index.html', locals())
+                    return redirect(reverse('index'))
             else:
                 message = '用户不存在！'
                 return render(request, 'blog/login.html', locals())
