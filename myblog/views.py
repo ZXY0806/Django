@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views.generic import View
 from django.urls import reverse
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from . import common
 from . import models
 from . import forms
@@ -11,8 +12,17 @@ from datetime import datetime, timedelta
 
 
 def index(request):
-    # 修改首页视图
-    return HttpResponse('HelloWorld')
+    if request.method == 'GET':
+        queryset = models.Blog.objects.all()
+        paginator = Paginator(queryset, 25)
+        page_num = request.GET.get('page')
+        try:
+            page = paginator.page(page_num)
+        except PageNotAnInteger:
+            page = paginator.page(1)
+        except EmptyPage:
+            page = paginator.page(paginator.num_pages)
+        return render(request, 'blog/index.html', locals())
 
 
 class Register(View):

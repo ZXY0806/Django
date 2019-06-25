@@ -14,7 +14,7 @@
 {% block content %}
 
     <div class="uk-width-medium-3-4">
-    {% for blog in blogs %}
+    {% for blog in page %}
         <article class="uk-article">
             <h2><a href="{% url 'blog' username=blog.user.username blog_id=blog.id %}">{{ blog.name }}</a></h2>
             <p class="uk-article-meta">{{blog.user.username}} 发表于{{ blog.created_at|datetime }} 阅读({{blog.readers}})评论({{blog.comments}})</p>
@@ -23,7 +23,19 @@
         </article>
         <hr class="uk-article-divider">
     {% endfor %}
-    {{ pagination('/?page=', page) }}
+    <ul class="uk-pagination">
+        {% if page.has_previous %}
+            <li><a href="{% url 'index' %}?page={{ page.previous_page_number }}"><i class="uk-icon-angle-double-left"></i></a></li>
+        {% else %}
+            <li class="uk-disabled"><span><i class="uk-icon-angle-double-left"></i></span></li>
+        {% endif %}
+            <li class="uk-active"><span>{{ page.number }}</span></li>
+        {% if page.has_next %}
+            <li><a href="{% url 'index' %}?page={{ page.next_page_number }}"><i class="uk-icon-angle-double-right"></i></a></li>
+        {% else %}
+            <li class="uk-disabled"><span><i class="uk-icon-angle-double-right"></i></span></li>
+        {% endif %}
+    </ul>
     </div>
 
     <div class="uk-width-medium-1-4">
