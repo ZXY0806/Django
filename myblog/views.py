@@ -113,6 +113,7 @@ class Login(View):
                     request.session['is_login'] = True
                     request.session['user_id'] = user.id
                     request.session['user_name'] = user.username
+                    request.session['user_image'] = user.image
                     # login_user = user
                     return redirect(reverse('index'))
             else:
@@ -129,3 +130,15 @@ def logout(request):
         request.session.flush()
         return redirect(reverse('login'))
 
+
+class Blog(View):
+    def get(self, request, blog_id):
+        try:
+            blog = models.Blog.objects.get(pk=blog_id)
+            comments = models.Comment.objects.filter(blog_id=blog_id)
+            return render(request, 'blog/blog.html', locals())
+        except models.Blog.DoesNotExist:
+            return render(request, 'blog/404.html')
+
+    def post(self, requst):
+        pass
