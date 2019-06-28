@@ -7,6 +7,7 @@ from . import common
 from . import models
 from . import forms
 from datetime import datetime, timedelta
+import json
 
 # Create your views here.
 
@@ -111,9 +112,7 @@ class Login(View):
                     return render(request, 'blog/login.html', locals())
                 else:
                     request.session['is_login'] = True
-                    request.session['user_id'] = user.id
-                    request.session['user_name'] = user.username
-                    request.session['user_image'] = user.image
+                    request.session['user'] = user
                     # login_user = user
                     return redirect(reverse('index'))
             else:
@@ -142,3 +141,28 @@ class Blog(View):
 
     def post(self, requst):
         pass
+
+
+class Comment(View):
+    def get(self, request):
+        pass
+
+    def post(self, request, blog_id):
+        if not request.session.get('is_login'):
+            return redirect(reverse('login'))
+        content = request.POST.get('content').strip()
+        parent_id = request.POST.get('parent_id')
+        parent = None
+        if not content:
+            res = {'error': '评论内容不能为空！'}
+            return HttpResponse(json.dumps(res), content_type='application/json')
+        if parent_id:
+            parents = models.Comment.objects.filter(pk=parent_id)
+            if parents:
+                parent = parents[0]
+        user = request.session.get('user')
+        blogs = models.Blog.objects.filter(pk=blog_id)
+        if blogs:
+            blog = blogs[0]
+        comment = models.Comment.objects.create(content=content, user=user, blog=blog, parent=parent)
+        return HttpResponse(json.dumps(comment), content_type='application/json')

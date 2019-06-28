@@ -11,7 +11,7 @@ class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     # sex = models.CharField(max_length=32, choices=gender, default='男')
     has_confirmed = models.BooleanField(default=False)
-    image = models.CharField(max_length=128, default="static 'blog/img/default.png'")
+    image = models.CharField(max_length=128, default="{% static 'blog/img/default.png' %}")
 
     def __str__(self):
         return self.username
@@ -55,7 +55,7 @@ class Blog(models.Model):
 
 class Comment(models.Model):
     content = models.TextField()
-    parent = models.ForeignKey('self', on_delete=models.CASCADE)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, default=None)
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     blog = models.ForeignKey('Blog', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

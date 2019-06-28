@@ -43,6 +43,7 @@ $(function(){
     <div class="uk-vertical-align-middle" style="width: 320px">
         <p><a href="/" class="uk-icon-button"><i class="uk-icon-html5"></i></a> <a href="{% %}">Awesome Python Webapp</a></p>
         <form id="vm" v-on:submit="submit" class="uk-panel uk-panel-box uk-form">
+            {% csrf_token %}
             <div class="uk-alert uk-alert-danger uk-hidden"></div>
             <div class="uk-form-row">
                 <div class="uk-form-controls uk-width-1-1">
