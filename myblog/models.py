@@ -41,6 +41,7 @@ class Blog(models.Model):
     digest = models.TextField(max_length=500)
     content = models.TextField()
     readers = models.PositiveIntegerField(default=0)
+    comments = models.PositiveIntegerField(default=0)
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -55,7 +56,7 @@ class Blog(models.Model):
 
 class Comment(models.Model):
     content = models.TextField()
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, default=None)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='children')
     user = models.ForeignKey('User', on_delete=models.CASCADE)
     blog = models.ForeignKey('Blog', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -166,3 +166,15 @@ class Comment(View):
             blog = blogs[0]
         comment = models.Comment.objects.create(content=content, user=user, blog=blog, parent=parent)
         return HttpResponse(json.dumps(comment), content_type='application/json')
+
+
+def hot(request):
+    pass
+
+
+def following(request):
+    pass
+
+
+def mycommented(request):
+    pass
