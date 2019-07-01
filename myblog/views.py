@@ -7,10 +7,11 @@ from . import common
 from . import models
 from . import forms
 from datetime import datetime, timedelta
-import json
+import json, logging
 
 # Create your views here.
 
+logger = logging.getLogger('console')
 
 def index(request):
     if request.method == 'GET':
@@ -101,23 +102,27 @@ class Login(View):
         if login_form.is_valid():
             username = login_form.cleaned_data.get('username')
             password = login_form.cleaned_data.get('password')
-            user = models.User.objects.filter(username=username)
-            if user:
-                if not user.has_confirmed:
-                    message = '该用户尚未确认，请邮件确认后登录！'
-                    return render(request, 'blog/login.html', locals())
-                hash_password = common.hash_it(password)
-                if hash_password != user.password:
-                    message = '密码错误！'
-                    return render(request, 'blog/login.html', locals())
-                else:
-                    request.session['is_login'] = True
-                    request.session['user'] = user
-                    # login_user = user
-                    return redirect(reverse('index'))
-            else:
+            try:
+                user = models.User.objects.get(username=username)
+            except models.User.DoesNotExist:
                 message = '用户不存在！'
                 return render(request, 'blog/login.html', locals())
+            except models.User.MultipleObjectsReturned:
+                message = '用户名错误！'
+                logger.warning('用户名不唯一！！！')
+                return render(request, 'blog/login.html', locals())
+            if not user.has_confirmed:
+                message = '该用户尚未确认，请邮件确认后登录！'
+                return render(request, 'blog/login.html', locals())
+            hash_password = common.hash_it(password)
+            if hash_password != user.password:
+                message = '密码错误！'
+                return render(request, 'blog/login.html', locals())
+            else:
+                request.session['is_login'] = True
+                request.session['user'] = user
+                # login_user = user
+                return redirect(reverse('index'))
         else:
             return render(request, 'blog/login.html', locals())
 
@@ -135,6 +140,8 @@ class Blog(View):
         try:
             blog = models.Blog.objects.get(pk=blog_id)
             comments = models.Comment.objects.filter(blog_id=blog_id)
+            blog.readers += 1
+            blog.save()
             return render(request, 'blog/blog.html', locals())
         except models.Blog.DoesNotExist:
             return render(request, 'blog/404.html')
@@ -161,10 +168,14 @@ class Comment(View):
             if parents:
                 parent = parents[0]
         user = request.session.get('user')
-        blogs = models.Blog.objects.filter(pk=blog_id)
-        if blogs:
-            blog = blogs[0]
+        try:
+            blog = models.Blog.objects.get(pk=blog_id)
+        except models.Blog.DoesNotExist:
+            logger.error('blog_id不存在！！！')
+            raise
         comment = models.Comment.objects.create(content=content, user=user, blog=blog, parent=parent)
+        blog.comments += 1
+        blog.save()
         return HttpResponse(json.dumps(comment), content_type='application/json')
 
 
