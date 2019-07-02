@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.views.generic import View
 from django.urls import reverse
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from . import common
 from . import models
 from . import forms
@@ -13,17 +12,11 @@ import json, logging
 
 logger = logging.getLogger('console')
 
+
 def index(request):
     if request.method == 'GET':
         queryset = models.Blog.objects.all()
-        paginator = Paginator(queryset, 25)
-        page_num = request.GET.get('page')
-        try:
-            page = paginator.page(page_num)
-        except PageNotAnInteger:
-            page = paginator.page(1)
-        except EmptyPage:
-            page = paginator.page(paginator.num_pages)
+        page = common.generate_page(request, queryset, 25)
         return render(request, 'blog/index.html', locals())
 
 
@@ -146,7 +139,7 @@ class Blog(View):
         except models.Blog.DoesNotExist:
             return render(request, 'blog/404.html')
 
-    def post(self, requst):
+    def post(self, request):
         pass
 
 
@@ -179,6 +172,51 @@ class Comment(View):
         return HttpResponse(json.dumps(comment), content_type='application/json')
 
 
+class MyBlog(View):
+    def get(self, request, username):
+        try:
+            user = models.User.objects.get(username=username)
+        except models.User.DoesNotExist:
+            return render(request, 'blog/404.html')
+        except models.User.MultipateObjectsReturned:
+            logger.error('用户名不唯一')
+            raise
+        blogs = user.blog_set.all()
+        page = common.generate_page(request, blogs, 25)
+        return render(request, 'blog/myblog.html', locals())
+
+    def post(self, request):
+        pass
+
+
+class Resume(View):
+    def get(self, request, username):
+        try:
+            user = models.User.objects.get(username=username)
+        except models.DoesNotExist:
+            logging.warning('用户名不存在！！！')
+            return redirect(reverse('index'))
+        except models.MultipleObjectsReturned:
+            logging.error('用户名不唯一！！！')
+            raise
+        follows = user.as_follower.all().values('followed')[:9]
+        fans = user.as_followed.all().values('follower')[:9]
+        blogs = user.blog_set.all()
+        blogs_page = common.generate_page(request, blogs, 20)
+        return render(request, 'blog/resume.html', locals())
+
+    def post(self, request):
+        pass
+
+
+class Relation(View):
+    def get(self, request):
+        pass
+
+    def post(self, request):
+        pass
+
+
 def hot(request):
     pass
 
@@ -189,3 +227,4 @@ def following(request):
 
 def mycommented(request):
     pass
+

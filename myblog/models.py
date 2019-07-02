@@ -12,6 +12,9 @@ class User(models.Model):
     # sex = models.CharField(max_length=32, choices=gender, default='男')
     has_confirmed = models.BooleanField(default=False)
     image = models.CharField(max_length=128, default="{% static 'blog/img/default.png' %}")
+    url = models.URLField()
+    follow_num = models.PositiveIntegerField(default=0)
+    fans_num = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return self.username
@@ -69,3 +72,16 @@ class Comment(models.Model):
         verbose_name = '评论'
         verbose_name_plural = '评论'
 
+
+class Relation(models.Model):
+    follower = models.ForeignKey('User', on_delete=models.CASCADE, related_name='as_follower')
+    followed = models.ForeignKey('User', on_delete=models.CASCADE, related_name='as_followed')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return '用户' + self.follower.username + '关注了' + self.followed.username
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = '用户关系'
+        verbose_name_plural = '用户关系'

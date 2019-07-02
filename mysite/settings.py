@@ -124,10 +124,11 @@ USE_L10N = True
 USE_TZ = False
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.2/howto/static-files/
-
+# 以下两个静态资源目录在模板中都可以通过/static/直接访问
+# 设置app下用来存放静态资源的目录名称
 STATIC_URL = '/static/'
+# 设置项目通用的静态资源的存放路径,一般放在项目根目录下
+# STATICFILES_DIRS = (os.join(BASE_DIR, 'common_static'))
 
 # mail
 pwd = os.getenv('mailpwd')

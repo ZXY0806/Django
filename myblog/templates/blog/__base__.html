@@ -21,7 +21,7 @@
 <body>
     <nav class="uk-navbar uk-navbar-attached uk-margin-bottom">
         <div class="uk-container uk-container-center">
-            <a href="{% url 'index' %}" class="uk-navbar-brand">博客</a>
+            <a href="{% url 'index' %}" class="uk-navbar-brand">首页</a>
             <ul class="uk-navbar-nav">
                 <!--<li data-url="blogs"><a href="{% url 'hot' %}"><i class="uk-icon-book"></i> 热门</a></li>-->
                 <li data-url="blogs"><a href="{% url 'index' %}" class="uk-icon-home">首页</a></li>
@@ -32,8 +32,8 @@
             <div class="uk-navbar-flip">
                 <ul class="uk-navbar-nav">
                 {% if request.session.user_name %}
-                    <li><a href="{% url 'home' %}"><i class="uk-icon-user"></i> {{ request.session.user_name }}</a></li>
-                    <li><a href="{% url 'myblogs' %}"><i class="uk-icon-sign-out"></i> 我的博客</a></li>
+                    <li><a href="{% url 'resume' %}"><i class="uk-icon-user"></i> {{ request.session.user_name }}</a></li>
+                    <li><a href="{% url 'myblog' %}"><i class="uk-icon-sign-out"></i> 我的博客</a></li>
                     <li><a href="{% url 'logout' %}"><i class="uk-icon-sign-out"></i> 登出</a></li>
                 {% else %}
                     <li><a href="{% url 'login' %}"><i class="uk-icon-sign-in"></i> 登陆</a></li>

@@ -3,6 +3,7 @@ from . import models
 import time
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 
 def hash_it(str, salt='this is a salt'):
@@ -31,3 +32,13 @@ def send_confirm_email(confirm_code, email):
     return res
 
 
+def generate_page(request, query_set, size):
+    paginator = Paginator(query_set, size)
+    page_num = request.GET.get('page')
+    try:
+        page = paginator.page(page_num)
+    except PageNotAnInteger:
+        page = paginator.page(1)
+    except EmptyPage:
+        page = paginator.page(paginator.num_pages)
+    return page
