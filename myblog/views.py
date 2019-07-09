@@ -181,6 +181,7 @@ class MyBlog(View):
         except models.User.MultipateObjectsReturned:
             logger.error('用户名不唯一')
             raise
+        common.get_relation(request, user)
         blogs = user.blog_set.all()
         page = common.generate_page(request, blogs, 25)
         return render(request, 'blog/myblog.html', locals())
@@ -191,6 +192,8 @@ class MyBlog(View):
 
 class Resume(View):
     def get(self, request, username):
+        if not request.session.get('is_login'):
+            return redirect(reverse('login'))
         try:
             user = models.User.objects.get(username=username)
         except models.DoesNotExist:
@@ -199,6 +202,7 @@ class Resume(View):
         except models.MultipleObjectsReturned:
             logging.error('用户名不唯一！！！')
             raise
+        common.get_relation(request, user)
         follows = user.as_follower.all().values('followed')[:9]
         fans = user.as_followed.all().values('follower')[:9]
         blogs = user.blog_set.all()
@@ -211,6 +215,7 @@ class Resume(View):
 
 class Relation(View):
     def get(self, request):
+        # 开发指针（先把外键查询搞清楚，该改的改了）
         pass
 
     def post(self, request):

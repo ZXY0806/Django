@@ -1,5 +1,5 @@
 from django.db import models
-
+from DjangoUeditor.models import UEditorField
 # Create your models here.
 
 
@@ -42,7 +42,12 @@ class ConfirmString(models.Model):
 class Blog(models.Model):
     name = models.CharField(max_length=128)
     digest = models.TextField(max_length=500)
-    content = models.TextField()
+    content = UEditorField(
+        width=800, height=500,
+        toolbars="full", imagePath="upimg/", filePath="upfile/",
+        upload_settings={"imageMaxSize": 1204000},
+        settings={}, command=None, blank=True
+    )
     readers = models.PositiveIntegerField(default=0)
     comments = models.PositiveIntegerField(default=0)
     user = models.ForeignKey('User', on_delete=models.CASCADE)

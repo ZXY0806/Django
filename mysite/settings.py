@@ -28,7 +28,7 @@ SECRET_KEY = 'fa*l=dx$7&_s*8qi+y&&fq16wt#&uj=h(d*#5+(5sf^$^(5x_#'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '172.16.3.111'
+    '*'
 ]
 
 
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'myblog',
+    'DjangoUeditor',
 ]
 
 MIDDLEWARE = [
@@ -127,6 +128,7 @@ USE_TZ = False
 # 以下两个静态资源目录在模板中都可以通过/static/直接访问
 # 设置app下用来存放静态资源的目录名称
 STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
 # 设置项目通用的静态资源的存放路径,一般放在项目根目录下
 # STATICFILES_DIRS = (os.join(BASE_DIR, 'common_static'))
 

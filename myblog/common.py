@@ -42,3 +42,15 @@ def generate_page(request, query_set, size):
     except EmptyPage:
         page = paginator.page(paginator.num_pages)
     return page
+
+
+def get_relation(request, user):
+    request.session['relation'] = 'unfollow'
+    if request.session.get('is_login'):
+        if request.session['user'].username != user.username:
+            # 下面这类外键字段查询可能不对，先这么写，等搞清了再回来改
+            relation = models.Relation.objects.filter(follower=request.session['user'], followed=user)
+            if relation:
+                request.session['relation'] = 'followed'
+        else:
+            request.session['relation'] = 'self'

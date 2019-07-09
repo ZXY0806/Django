@@ -31,8 +31,8 @@
             </ul>
             <div class="uk-navbar-flip">
                 <ul class="uk-navbar-nav">
-                {% if request.session.user_name %}
-                    <li><a href="{% url 'resume' %}"><i class="uk-icon-user"></i> {{ request.session.user_name }}</a></li>
+                {% if request.session['user'] %}
+                    <li><a href="{% url 'resume' %}"><i class="uk-icon-user"></i> {{ request.session['user'].username }}</a></li>
                     <li><a href="{% url 'myblog' %}"><i class="uk-icon-sign-out"></i> 我的博客</a></li>
                     <li><a href="{% url 'logout' %}"><i class="uk-icon-sign-out"></i> 登出</a></li>
                 {% else %}
