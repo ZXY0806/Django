@@ -84,7 +84,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'mysite',
-        'HOST': '172.16.3.111',
+        'HOST': '192.168.0.103',
         'PORT': '3306',
         'USER': 'root',
         'PASSWORD': 'Kingview01!',
@@ -147,63 +147,63 @@ CONFIRM_DAYS = 1
 WEBSITE = '172.16.3.111:9000'
 
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'standard': {
-            'format': '%(asctime)s [%(threadName)s:%(thread)d] [%(name)s:%(lineno)d] [%(module)s:%(funcName)s] [%(levelname)s]- %(message)s'
-        },
-        'simple': {
-            'format': '[%(asctime)s][%(levelname)s]%(funcName)s-%(message)s'
-        }
-    },
-    'filters': {
-
-    },
-    'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler',
-            'include_html': True,
-        },
-        'default': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/log/all.log',  # 日志输出文件
-            'maxBytes': 1024 * 1024 * 5,  # 文件大小
-            'backupCount': 1,  # 备份份数
-            'formatter': 'standard',  # 使用哪种formatters日志格式
-        },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
-        },
-        'request_handler': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/sourceDns/log/script.log',
-            'maxBytes': 1024 * 1024 * 5,
-            'backupCount': 5,
-            'formatter': 'standard',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['default', 'console'],
-            'level': 'DEBUG',
-            'propagate': False  # 禁止将该记录器的日志传播到上级记录器
-        },
-        'django.request': {
-            'handlers': ['request_handler'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-        'console': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        }
-    }
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'standard': {
+#             'format': '%(asctime)s [%(threadName)s:%(thread)d] [%(name)s:%(lineno)d] [%(module)s:%(funcName)s] [%(levelname)s]- %(message)s'
+#         },
+#         'simple': {
+#             'format': '[%(asctime)s][%(levelname)s]%(funcName)s-%(message)s'
+#         }
+#     },
+#     'filters': {
+#
+#     },
+#     'handlers': {
+#         'mail_admins': {
+#             'level': 'ERROR',
+#             'class': 'django.utils.log.AdminEmailHandler',
+#             'include_html': True,
+#         },
+#         'default': {
+#             'level': 'DEBUG',
+#             'class': 'logging.handlers.RotatingFileHandler',
+#             'filename': '/log/all.log',  # 日志输出文件
+#             'maxBytes': 1024 * 1024 * 5,  # 文件大小
+#             'backupCount': 1,  # 备份份数
+#             'formatter': 'standard',  # 使用哪种formatters日志格式
+#         },
+#         'console': {
+#             'level': 'DEBUG',
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'simple'
+#         },
+#         'request_handler': {
+#             'level': 'DEBUG',
+#             'class': 'logging.handlers.RotatingFileHandler',
+#             'filename': '/log/script.log',
+#             'maxBytes': 1024 * 1024 * 5,
+#             'backupCount': 5,
+#             'formatter': 'standard',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['default', 'console'],
+#             'level': 'DEBUG',
+#             'propagate': False  # 禁止将该记录器的日志传播到上级记录器
+#         },
+#         'django.request': {
+#             'handlers': ['request_handler'],
+#             'level': 'DEBUG',
+#             'propagate': False,
+#         },
+#         'console': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',
+#             'propagate': False,
+#         }
+#     }
+# }

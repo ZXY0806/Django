@@ -12,7 +12,7 @@ class User(models.Model):
     # sex = models.CharField(max_length=32, choices=gender, default='男')
     has_confirmed = models.BooleanField(default=False)
     image = models.CharField(max_length=128, default="{% static 'blog/img/default.png' %}")
-    url = models.URLField()
+    url = models.URLField(blank=True, null=True)
     follow_num = models.PositiveIntegerField(default=0)
     fans_num = models.PositiveIntegerField(default=0)
 
@@ -48,6 +48,7 @@ class Blog(models.Model):
         upload_settings={"imageMaxSize": 1204000},
         settings={}, command=None, blank=True
     )
+    # content = models.TextField()
     readers = models.PositiveIntegerField(default=0)
     comments = models.PositiveIntegerField(default=0)
     user = models.ForeignKey('User', on_delete=models.CASCADE)

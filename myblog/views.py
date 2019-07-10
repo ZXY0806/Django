@@ -215,7 +215,7 @@ class Resume(View):
 
 class Relation(View):
     def get(self, request):
-        # 开发指针（先把外键查询搞清楚，该改的改了）
+
         pass
 
     def post(self, request):
