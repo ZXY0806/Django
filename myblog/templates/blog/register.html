@@ -6,7 +6,34 @@
 {% block beforehead %}
 
 <script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
 
+function csrfSafeMethod(method) {
+    // 这些HTTP方法不要求CSRF包含
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
 function validateEmail(email){
     var re = /^[a-z0-9\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9-_]+){1,4}$/;
     return re.test(email.toLowerCase());
@@ -38,15 +65,15 @@ $(function () {
                 }
                 var email = this.email.trim().toLowerCase();
                 $form.postJSON('{% url 'register' %}', {
-                    name: this.name.trim(),
+                    username: this.name.trim(),
                     email: email,
-                    password1: sha1(email + ':' + this.password1).toString(),
-                    password2: sha1(email + ':' + this.password2).toString()
+                    password1: sha1(this.name.trim() + ':' + this.password1).toString(),
+                    password2: sha1(this.name.trim() + ':' + this.password2).toString()
                 }, function (err, r) {
                     if (err) {
                         return $form.showFormError(err);
                     }
-                    //return location.assign('{% url 'index' %}');
+                    return location.assign('{% url 'confirm' %}');
                 });
             }
         }
@@ -61,9 +88,6 @@ $(function () {
     <div class="uk-width-2-3">
         <h1>欢迎注册！</h1>
         <form id="vm" v-on:submit="submit" class="uk-form uk-form-stacked">
-            {% if message %}
-                <div class="uk-alert uk-alert-danger">{{ message }}</div>
-            {% endif %}
             {% csrf_token %}
             <div class="uk-alert uk-alert-danger uk-hidden"></div>
             <div class="uk-form-row">
@@ -79,13 +103,13 @@ $(function () {
                 </div>
             </div>
             <div class="uk-form-row">
-                <label class="uk-form-label">输入口令:</label>
+                <label class="uk-form-label">输入密码:</label>
                 <div class="uk-form-controls">
                     <input v-model="password1" type="password" maxlength="50" placeholder="输入口令" class="uk-width-1-1" required>
                 </div>
             </div>
             <div class="uk-form-row">
-                <label class="uk-form-label">重复口令:</label>
+                <label class="uk-form-label">确认密码:</label>
                 <div class="uk-form-controls">
                     <input v-model="password2" type="password" maxlength="50" placeholder="重复口令" class="uk-width-1-1" required>
                 </div>

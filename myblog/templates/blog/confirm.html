@@ -6,9 +6,11 @@
 </head>
 <body>
 
-
-    <h1 style="margin-left: 100px;">{{ message }}</h1>
-
+    {% if message %}
+        <h1 style="margin-left: 100px;">{{ message }}</h1>
+    {% else %}
+        <h1 style="margin-left: 100px;">欢迎注册，请前往邮箱确认！</h1>
+    {% endif %}
     <script>
         window.setTimeout("window.location={% url 'login' %}",2000);
     </script>

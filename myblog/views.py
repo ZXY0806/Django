@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.generic import View
 from django.urls import reverse
 from . import common
@@ -7,7 +7,7 @@ from . import models
 from . import forms
 from datetime import datetime, timedelta
 import json, logging
-
+from itertools import chain
 # Create your views here.
 
 logger = logging.getLogger('console')
@@ -27,41 +27,42 @@ class Register(View):
         return render(request, 'blog/register.html')
 
     def post(self, request):
-        register_form = forms.RegisterForm(request.POST)
-        message = '请检查填写的内容！'
+        data = json.loads(request.body.decode())
+        register_form = forms.RegisterForm(data)
         if register_form.is_valid():
             username = register_form.cleaned_data.get('username')
             email = register_form.cleaned_data.get('email')
             password1 = register_form.cleaned_data.get('password1')
             password2 = register_form.cleaned_data.get('password2')
             if password1 != password2:
-                message = '两次输入的密码不同！'
-                return render(request, 'blog/register.html', locals())
+                res = {'error': 'bad-request', 'message': '两次输入的密码不同！'}
+                return JsonResponse(res)
             # 此处应添加用户名校验，只能为大小写字母、数字或下划线，不能为汉字，避免url为汉字时报错
             same_name_user = models.User.objects.filter(username=username)
             if same_name_user:
-                message = '用户名已经存在'
-                return render(request, 'blog/register.html', locals())
+                res = {'error': 'bad-request', 'message': '用户名已经存在！'}
+                return JsonResponse(res)
             same_email_user = models.User.objects.filter(email=email)
             if same_email_user:
-                message = '该邮箱已经被注册了！'
-                return render(request, 'blog/register.html', locals())
+                res = {'error': 'bad-request', 'message': '该邮箱已经被注册了！'}
+                return JsonResponse(res)
 
             new_user = models.User()
             new_user.username = username
             new_user.email = email
             new_user.password = common.hash_it(password1)
             new_user.save()
-            message = '欢迎注册，请前往邮箱确认！'
             confirm_code = common.generate_confirm_string(new_user)
             res = common.send_confirm_email(confirm_code, email)
             print(res)
-            return render(request, 'blog/confirm.html', locals())
+            res = {}
+            return JsonResponse(res)
         else:
-            return render(request, 'blog/register.html', locals())
+            res = {'error': 'bad-request', 'message': '请检查输入的内容！'}
+            return JsonResponse(res)
 
 
-def confirm(self, request):
+def confirm(request):
     code = request.GET.get('code', None)
     if code:
         try:
@@ -81,43 +82,52 @@ def confirm(self, request):
         except:
             message = '无效的确认请求!'
             return render(request, 'blog/confirm.html', locals())
+    else:
+        message = '欢迎注册，请前往邮箱确认！'
+        return render(request, 'blog/confirm.html', locals())
 
 
 class Login(View):
     def get(self, request):
         if request.session.get('is_login'):
             return redirect(reverse('index'))
+        request.session['return_url'] = request.GET.get('returnUrl')
         return render(request, 'blog/login.html')
 
     def post(self, request):
-        login_form = forms.LoginForm(request.POST)
-        message = '用户名密码错误！'
+        data = json.loads(request.body.decode())
+        login_form = forms.LoginForm(data)
         if login_form.is_valid():
             username = login_form.cleaned_data.get('username')
             password = login_form.cleaned_data.get('password')
             try:
                 user = models.User.objects.get(username=username)
             except models.User.DoesNotExist:
-                message = '用户不存在！'
-                return render(request, 'blog/login.html', locals())
+                res = {'error': 'bad-request', 'message': '用户名错误！'}
+                return JsonResponse(res)
             except models.User.MultipleObjectsReturned:
-                message = '用户名错误！'
+                res = {'error': 'bad-request', 'message': '用户名错误！'}
                 logger.warning('用户名不唯一！！！')
-                return render(request, 'blog/login.html', locals())
+                return JsonResponse(res)
             if not user.has_confirmed:
-                message = '该用户尚未确认，请邮件确认后登录！'
-                return render(request, 'blog/login.html', locals())
+                res = {'error': 'bad-request', 'message': '该用户尚未确认，请邮件确认后登录！'}
+                return JsonResponse(res)
             hash_password = common.hash_it(password)
             if hash_password != user.password:
-                message = '密码错误！'
-                return render(request, 'blog/login.html', locals())
+                res = {'error': 'bad-request', 'message': '密码错误！'}
+                return JsonResponse(res)
             else:
                 request.session['is_login'] = True
-                request.session['user'] = user
-                # login_user = user
-                return redirect(reverse('index'))
+                request.session['username'] = user.username
+                return_url = request.session.get('return_url')
+                if return_url:
+                    res = {'return_url': return_url}
+                    return JsonResponse(res)
+                res = {}
+                return JsonResponse(res)
         else:
-            return render(request, 'blog/login.html', locals())
+            res = {'error': 'bad-request', 'message': '用户名密码错误'}
+            return JsonResponse(res)
 
 
 def logout(request):
@@ -160,16 +170,16 @@ class Comment(View):
             parents = models.Comment.objects.filter(pk=parent_id)
             if parents:
                 parent = parents[0]
-        user = request.session.get('user')
+        username = request.session.get('username')
         try:
             blog = models.Blog.objects.get(pk=blog_id)
         except models.Blog.DoesNotExist:
             logger.error('blog_id不存在！！！')
             raise
-        comment = models.Comment.objects.create(content=content, user=user, blog=blog, parent=parent)
-        blog.comments += 1
-        blog.save()
-        return HttpResponse(json.dumps(comment), content_type='application/json')
+        # comment = models.Comment.objects.create(content=content, user=user, blog=blog, parent=parent)
+        # blog.comments += 1
+        # blog.save()
+        # return HttpResponse(json.dumps(comment), content_type='application/json')
 
 
 class MyBlog(View):
@@ -223,11 +233,23 @@ class Relation(View):
 
 
 def hot(request):
-    pass
+    queryset = models.Blog.objects.order_by('-readers')
+    page = common.generate_page(request, queryset, 25)
+    return render(request, 'blog/hot.html', locals())
 
 
 def following(request):
-    pass
+    if not request.session.get('is_login'):
+        return redirect(reverse('login'))
+    user = models.User.objects.get(username=request.session.get('username'))
+    relations = user.as_follower.all()
+    queryset = []
+    for rla in relations:
+        blogs = rla.followed.blog_set.all()
+        queryset = chain(queryset, blogs)
+    page = common.generate_page(request, queryset, 25)
+    return render(request, 'blog/following.html', locals())
+    # 开发指针，调试关注页
 
 
 def mycommented(request):

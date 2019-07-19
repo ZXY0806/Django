@@ -6,11 +6,39 @@
 {% block beforehead %}
 
 <script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // 这些HTTP方法不要求CSRF包含
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
 $(function(){
     var vm = new Vue({
         el: '#vm',
         data: {
-            email: '',
+            username: '',
             password: ''
         },
         methods: {
@@ -18,14 +46,14 @@ $(function(){
                 event.preventDefault();
                 var
                     $form = $('#vm'),
-                    email = this.email.trim().toLowerCase(),
+                    username = this.username.trim(),
                     data = {
-                        email: email,
-                        passwd: this.password === '' ? '' : sha1(email + ':' + this.password).toString()
+                        username: username,
+                        password: this.password === '' ? '' : sha1(username + ':' + this.password).toString()
                     };
                 $form.postJSON('{% url 'login' %}', data, function(err, r){
                     if(!err){
-                        location.assign('{% url 'index' %}');
+                        location.assign(r.return_url);
                     }
                 });
             }
@@ -47,12 +75,12 @@ $(function(){
             <div class="uk-alert uk-alert-danger uk-hidden"></div>
             <div class="uk-form-row">
                 <div class="uk-form-controls uk-width-1-1">
-                    </i><input v-model="email" name="email" type="text" placeholder="电子邮件" maxlength="50" class="uk-width-1-1 uk-form-large">
+                    </i><input v-model="username" name="username" type="text" placeholder="用户名" maxlength="50" class="uk-width-1-1 uk-form-large">
                 </div>
             </div>
             <div class="uk-form-row">
                 <div class="uk-form-controls uk-width-1-1">
-                    <input v-model="password" name="password" type="password" placeholder="口令" maxlength="50" class="uk-width-1-1 uk-form-large">
+                    <input v-model="password" name="password" type="password" placeholder="密码" maxlength="50" class="uk-width-1-1 uk-form-large">
                 </div>
             </div>
             <div class="uk-form-row">
@@ -61,5 +89,4 @@ $(function(){
         </form>
     </div>
 </div>
-
 {% endblock %}

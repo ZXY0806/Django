@@ -1,0 +1,50 @@
+{% extends "blog/__base__.html" %}
+
+{% block title %}热门{% endblock %}
+
+{% block beforehead %}
+
+<script>
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="uk-width-medium-3-4">
+    {% for blog in page %}
+        <article class="uk-article">
+            <h2><a href="{% url 'blog' username=blog.user.username blog_id=blog.id %}">{{ blog.name }}</a></h2>
+            <p class="uk-article-meta">{{blog.user.username}} 发表于{{ blog.created_at|date:"Y-m-d" }}{{ blog.created_at|time:"H:i:s" }} 阅读({{blog.readers}})评论({{blog.comments}})</p>
+            <p>{{ blog.summary }}</p>
+            <p><a href="{% url 'blog' username=blog.user.username blog_id=blog.id %}">继续阅读 <i class="uk-icon-angle-double-right"></i></a></p>
+        </article>
+        <hr class="uk-article-divider">
+    {% endfor %}
+    <ul class="uk-pagination">
+        {% if page.has_previous %}
+            <li><a href="{% url 'index' %}?page={{ page.previous_page_number }}"><i class="uk-icon-angle-double-left"></i></a></li>
+        {% else %}
+            <li class="uk-disabled"><span><i class="uk-icon-angle-double-left"></i></span></li>
+        {% endif %}
+            <li class="uk-active"><span>{{ page.number }}</span></li>
+        {% if page.has_next %}
+            <li><a href="{% url 'index' %}?page={{ page.next_page_number }}"><i class="uk-icon-angle-double-right"></i></a></li>
+        {% else %}
+            <li class="uk-disabled"><span><i class="uk-icon-angle-double-right"></i></span></li>
+        {% endif %}
+    </ul>
+    </div>
+
+    <div class="uk-width-medium-1-4">
+        <div class="uk-panel uk-panel-header">
+            <h3 class="uk-panel-title">友情链接</h3>
+            <ul class="uk-list uk-list-line">
+                <li><i class="uk-icon-thumbs-o-up"></i> <a target="_blank" href="https://www.cnblogs.com/sheshouxin/">博客园</a></li>
+                <li><i class="uk-icon-thumbs-o-up"></i> <a target="_blank" href="https://github.com/ZXY0806?tab=repositories">Github</a></li>
+                <li><i class="uk-icon-thumbs-o-up"></i> <a target="_blank" href="http://www.liaoxuefeng.com/wiki/001374738125095c955c1e6d8bb493182103fac9270762a000">Python教程</a></li>
+            </ul>
+        </div>
+    </div>
+
+{% endblock %}

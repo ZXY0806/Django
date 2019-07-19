@@ -31,12 +31,12 @@
             </ul>
             <div class="uk-navbar-flip">
                 <ul class="uk-navbar-nav">
-                {% if request.session.user %}
-                    <li><a href="{% url 'resume' %}"><i class="uk-icon-user"></i> {{ request.session.user.username }}</a></li>
-                    <li><a href="{% url 'myblog' %}"><i class="uk-icon-sign-out"></i> 我的博客</a></li>
+                {% if request.session.username %}
+                    <li><a href="{% url 'resume' username=request.session.username %}"><i class="uk-icon-user"></i> {{ request.session.username }}</a></li>
+                    <li><a href="{% url 'myblog' username=request.session.username %}"><i class="uk-icon-sign-out"></i> 我的博客</a></li>
                     <li><a href="{% url 'logout' %}"><i class="uk-icon-sign-out"></i> 登出</a></li>
                 {% else %}
-                    <li><a href="{% url 'login' %}"><i class="uk-icon-sign-in"></i> 登陆</a></li>
+                    <li><a id="login" href="{% url 'login' %}"><i class="uk-icon-sign-in"></i> 登录</a></li>
                     <li><a href="{% url 'register' %}"><i class="uk-icon-edit"></i> 注册</a></li>
                 {% endif %}
                 </ul>
@@ -70,4 +70,11 @@
         </div>
     </div>
 </body>
+<script type="text/javascript">
+    var a_login = document.getElementById('login');
+    var old_href = a_login.getAttribute("href");
+    var cur_path = window.location.pathname;
+    var new_href = old_href + '?returnUrl=' + cur_path;
+    a_login.href = new_href;
+</script>
 </html>
