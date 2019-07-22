@@ -247,11 +247,15 @@ def following(request):
     for rla in relations:
         blogs = rla.followed.blog_set.all()
         queryset = chain(queryset, blogs)
+    queryset = list(queryset)
     page = common.generate_page(request, queryset, 25)
     return render(request, 'blog/following.html', locals())
-    # 开发指针，调试关注页
 
 
 def mycommented(request):
-    pass
+    if not request.session.get('is_login'):
+        return redirect(reverse('login'))
+    queryset = models.Blog.objects.filter(comment__user__username=request.session.get('username'))
+    page = common.generate_page(request, queryset, 25)
+    return render(request, 'blog/commented.html', locals())
 

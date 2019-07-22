@@ -53,7 +53,13 @@ $(function(){
                     };
                 $form.postJSON('{% url 'login' %}', data, function(err, r){
                     if(!err){
-                        location.assign(r.return_url);
+                        if(r.return_url)
+                        {
+                            location.assign(r.return_url);
+                        }
+                        else{
+                            location.assign({% url 'index' %});
+                        }
                     }
                 });
             }

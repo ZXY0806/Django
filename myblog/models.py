@@ -67,7 +67,7 @@ class Comment(models.Model):
     content = models.TextField()
     parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='children')
     user = models.ForeignKey('User', on_delete=models.CASCADE)
-    blog = models.ForeignKey('Blog', on_delete=models.CASCADE)
+    blog = models.ForeignKey('Blog', on_delete=models.CASCADE, related_query_name='comment')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
