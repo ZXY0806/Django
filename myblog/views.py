@@ -119,6 +119,7 @@ class Login(View):
             else:
                 request.session['is_login'] = True
                 request.session['username'] = user.username
+                request.session['user_image'] = user.image.url
                 return_url = request.session.get('return_url')
                 if return_url:
                     res = {'return_url': return_url}
@@ -139,7 +140,7 @@ def logout(request):
 
 
 class Blog(View):
-    def get(self, request, blog_id):
+    def get(self, request, username, blog_id):
         try:
             blog = models.Blog.objects.get(pk=blog_id)
             comments = models.Comment.objects.filter(blog_id=blog_id)

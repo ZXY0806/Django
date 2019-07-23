@@ -68,6 +68,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # 'django.template.context_processors.media',
             ],
         },
     },
@@ -128,6 +129,7 @@ USE_TZ = False
 # 以下两个静态资源目录在模板中都可以通过/static/直接访问
 # 设置app下用来存放静态资源的目录名称
 STATIC_URL = '/static/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'myblog/media')
 MEDIA_URL = '/media/'
 # 设置项目通用的静态资源的存放路径,一般放在项目根目录下
 # STATICFILES_DIRS = (os.join(BASE_DIR, 'common_static'))

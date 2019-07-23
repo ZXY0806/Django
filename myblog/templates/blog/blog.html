@@ -1,5 +1,5 @@
 
-{% extends '__base__.html' %}
+{% extends 'blog/__base__.html' %}
 
 {% block title %}{{blog.name}}{% endblock %}
 
@@ -36,7 +36,7 @@ $.ajaxSetup({
 var comment_url = '/api/blogs/{{blog.id}}/comments';
 $(function(){
     var $form = $('#form-comment');
-    var user = '{{__user__.name or ''}}';
+    var user = '{{ request.session.user_name }}';
     $form.submit(function(event){
         event.preventDefault();
         if (user==='') {
@@ -62,7 +62,7 @@ $(function(){
     <div class="uk-width-medium-3-4">
         <article class="uk-article">
             <h2>{{ blog.name }}</h2>
-            <p class="uk-article-meta">发表于{{ blog.created_at|datetime }}</p>
+            <p class="uk-article-meta">发表于{{ blog.created_at|date:"Y-m-d" }}{{ blog.created_at|time:"H:i:s" }}</p>
             <p>{{ blog.content|safe }}</p>
         </article>
 
@@ -75,7 +75,7 @@ $(function(){
             {% if request.session.is_login %}
             <header class="uk-comment-header">
                 <img class="uk-comment-avatar uk-border-circle" width="50" height="50" src="{{ request.session.user_image }}">
-                <h4 class="uk-comment-title">{{ request.session.user_name }}</h4>
+                <h4 class="uk-comment-title">{{ request.session.username }}</h4>
             </header>
             {% endif %}
             <div class="uk-comment-body">
@@ -98,22 +98,24 @@ $(function(){
         <h3>最新评论</h3>
 
         <ul class="uk-comment-list">
-            {% for comment in comments %}
-            <li>
-                <article class="uk-comment">
-                    <header class="uk-comment-header">
-                        <img class="uk-comment-avatar uk-border-circle" width="50" height="50" src="{{ comment.user_image }}">
-                        <h4 class="uk-comment-title">{{ comment.user.username }} {% if comment.user.id == blog.user.id %}(作者){% endif %}</h4>
-                        <p class="uk-comment-meta">{{ comment.created_at|datetime }}</p>
-                    </header>
-                    <div class="uk-comment-body">
-                        {{ comment.content|safe }}
-                    </div>
-                </article>
-            </li>
+            {% if comments %}
+                {% for comment in comments %}
+                <li>
+                    <article class="uk-comment">
+                        <header class="uk-comment-header">
+                            <img class="uk-comment-avatar uk-border-circle" width="50" height="50" src="{{ comment.user.image.url }}">
+                            <h4 class="uk-comment-title">{{ comment.user.username }} {% if comment.user.id == blog.user.id %}(作者){% endif %}</h4>
+                            <p class="uk-comment-meta">{{ comment.created_at|date:"Y-m-d" }}{{ comment.created_at|time:"H:i:s" }}</p>
+                        </header>
+                        <div class="uk-comment-body">
+                            {{ comment.content }}
+                        </div>
+                    </article>
+                </li>
+                {% endfor %}
             {% else %}
-            <p>还没有人评论...</p>
-            {% endfor %}
+                <p>还没有人评论...</p>
+            {% endif %}
         </ul>
 
     </div>
@@ -121,8 +123,8 @@ $(function(){
     <div class="uk-width-medium-1-4">
         <div class="uk-panel uk-panel-box">
             <div class="uk-text-center">
-                <img class="uk-border-circle" width="120" height="120" src="{{ blog.user.image }}">
-                <h3>{{ blog.user.name }}</h3>
+                <img class="uk-border-circle" width="120" height="120" src="{{ blog.user.image.url }}">
+                <h3>{{ blog.user.username }}</h3>
             </div>
         </div>
         <div class="uk-panel uk-panel-header">

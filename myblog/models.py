@@ -11,7 +11,7 @@ class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     # sex = models.CharField(max_length=32, choices=gender, default='男')
     has_confirmed = models.BooleanField(default=False)
-    image = models.CharField(max_length=128, default="{% static 'blog/img/default.png' %}")
+    image = models.ImageField(upload_to='img/', default='default/user.png', height_field=None, width_field=None, max_length=100)
     url = models.URLField(blank=True, null=True)
     follow_num = models.PositiveIntegerField(default=0)
     fans_num = models.PositiveIntegerField(default=0)
