@@ -54,3 +54,16 @@ def get_relation(request, user):
                 request.session['relation'] = 'followed'
         else:
             request.session['relation'] = 'self'
+
+
+def add_indents_for_comments(comments):
+    res = []
+    def recursive_search(children, indent):
+        for c in children:
+            c.indent = indent
+            res.append(c)
+            children = c.children.all()
+            if children:
+                recursive_search(children, indent+40)
+    recursive_search(comments, 0)
+    return res

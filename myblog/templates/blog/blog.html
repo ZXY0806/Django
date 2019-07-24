@@ -100,16 +100,19 @@ $(function(){
         <ul class="uk-comment-list">
             {% if comments %}
                 {% for comment in comments %}
-                <li>
+                <li style="margin-left:{{ comment.indent }}px">
                     <article class="uk-comment">
-                        <header class="uk-comment-header">
-                            <img class="uk-comment-avatar uk-border-circle" width="50" height="50" src="{{ comment.user.image.url }}">
-                            <h4 class="uk-comment-title">{{ comment.user.username }} {% if comment.user.id == blog.user.id %}(作者){% endif %}</h4>
-                            <p class="uk-comment-meta">{{ comment.created_at|date:"Y-m-d" }}{{ comment.created_at|time:"H:i:s" }}</p>
-                        </header>
-                        <div class="uk-comment-body">
-                            {{ comment.content }}
-                        </div>
+                        <article class="uk-article">
+                            <img class="uk-comment-avatar uk-border-circle" width="30" height="30" src="{{ comment.user.image.url }}">
+                            <h5 class="uk-comment-title">{{ comment.content }}</h5>
+                            {% if not comment.parent %}
+                                <p class="uk-article-meta">{{ comment.user.username }} {% if comment.user.id == blog.user.id %}(作者){% endif %} {{ comment.created_at|date:"Y-m-d" }}{{ comment.created_at|time:"H:i:s" }}</p>
+                            {% else %}
+                                <p class="uk-article-meta">{{ comment.user.username }} {% if comment.user.id == blog.user.id %}(作者){% endif %} 回复 {{ comment.parent.user.username }} {% if comment.parent.user.id == blog.user.id %}(作者){% endif %} {{ comment.created_at|date:"Y-m-d" }}{{ comment.created_at|time:"H:i:s" }}</p>
+                            {% endif %}
+                            <p><a href="{% url 'blog' username=blog.user.username blog_id=blog.id %}">回复<i class="uk-icon-angle-double-right"></i></a></p>
+                        </article>
+                        <hr class="uk-article-divider">
                     </article>
                 </li>
                 {% endfor %}

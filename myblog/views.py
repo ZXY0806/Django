@@ -143,7 +143,8 @@ class Blog(View):
     def get(self, request, username, blog_id):
         try:
             blog = models.Blog.objects.get(pk=blog_id)
-            comments = models.Comment.objects.filter(blog_id=blog_id)
+            queryset = models.Comment.objects.filter(blog_id=blog_id, parent=None)
+            comments = common.add_indents_for_comments(queryset)
             blog.readers += 1
             blog.save()
             return render(request, 'blog/blog.html', locals())
