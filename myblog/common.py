@@ -47,9 +47,9 @@ def generate_page(request, query_set, size):
 def get_relation(request, user):
     request.session['relation'] = 'unfollow'
     if request.session.get('is_login'):
-        if request.session['user'].username != user.username:
-            # 下面这类外键字段查询可能不对，先这么写，等搞清了再回来改
-            relation = models.Relation.objects.filter(follower=request.session['user'], followed=user)
+        if request.session['username'] != user.username:
+            follower = models.User.objects.get(pk=request.session['user_id'])
+            relation = user.as_followed.filter(follower=follower, followed=user)
             if relation:
                 request.session['relation'] = 'followed'
         else:
@@ -67,3 +67,4 @@ def add_indents_for_comments(comments):
                 recursive_search(children, indent+40)
     recursive_search(comments, 0)
     return res
+

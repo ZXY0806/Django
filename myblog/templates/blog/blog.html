@@ -33,10 +33,16 @@ $.ajaxSetup({
         }
     }
 });
-var comment_url = '/api/blogs/{{blog.id}}/comments';
+var comment_url = '{% url 'comment' username=blog.user.username blog_id=blog.id %}';
 $(function(){
+    var comment_id = '';
+    $('.reply').click(function(){
+        comment_id = parseInt($(this).attr('id'));
+        var comment_user = $(this).attr('data-username');
+        $('#form-comment').find('textarea').val('@'+comment_user+'\n');
+    });
     var $form = $('#form-comment');
-    var user = '{{ request.session.user_name }}';
+    var user = '{{ request.session.username }}';
     $form.submit(function(event){
         event.preventDefault();
         if (user==='') {
@@ -46,7 +52,7 @@ $(function(){
         if (content==='') {
             return $form.showFormError('请输入评论内容！');
         }
-        $form.postJSON(comment_url, {'content': content }, function (err, result) {
+        $form.postJSON(comment_url, {'content': content, 'parent_id': comment_id }, function (err, result) {
             if (err) {
                 return $form.showFormError(err);
             }
@@ -83,7 +89,7 @@ $(function(){
                     {% csrf_token %}
                     <div class="uk-alert uk-alert-danger uk-hidden"></div>
                     <div class="uk-form-row">
-                        <textarea rows="6" placeholder="说点什么吧" style="width:100%;resize:none;"></textarea>
+                        <textarea id="input" rows="6" placeholder="说点什么吧" style="width:100%;resize:none;"></textarea>
                     </div>
                     <div class="uk-form-row">
                         <button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-comment"></i> 发表评论</button>
@@ -103,14 +109,14 @@ $(function(){
                 <li style="margin-left:{{ comment.indent }}px">
                     <article class="uk-comment">
                         <article class="uk-article">
-                            <img class="uk-comment-avatar uk-border-circle" width="30" height="30" src="{{ comment.user.image.url }}">
+                            <a href=" {% url 'myblog' username=comment.user.username %} " ><img class="uk-comment-avatar uk-border-circle" width="30" height="30" src="{{ comment.user.image.url }}"></a>
                             <h5 class="uk-comment-title">{{ comment.content }}</h5>
                             {% if not comment.parent %}
                                 <p class="uk-article-meta">{{ comment.user.username }} {% if comment.user.id == blog.user.id %}(作者){% endif %} {{ comment.created_at|date:"Y-m-d" }}{{ comment.created_at|time:"H:i:s" }}</p>
                             {% else %}
                                 <p class="uk-article-meta">{{ comment.user.username }} {% if comment.user.id == blog.user.id %}(作者){% endif %} 回复 {{ comment.parent.user.username }} {% if comment.parent.user.id == blog.user.id %}(作者){% endif %} {{ comment.created_at|date:"Y-m-d" }}{{ comment.created_at|time:"H:i:s" }}</p>
                             {% endif %}
-                            <p><a href="{% url 'blog' username=blog.user.username blog_id=blog.id %}">回复<i class="uk-icon-angle-double-right"></i></a></p>
+                            <p><a id="{{ comment.id }}" data-username="{{ comment.user.username }}" class="reply" href="#input">回复<i class="uk-icon-angle-double-right"></i></a></p>
                         </article>
                         <hr class="uk-article-divider">
                     </article>
@@ -126,8 +132,8 @@ $(function(){
     <div class="uk-width-medium-1-4">
         <div class="uk-panel uk-panel-box">
             <div class="uk-text-center">
-                <img class="uk-border-circle" width="120" height="120" src="{{ blog.user.image.url }}">
-                <h3>{{ blog.user.username }}</h3>
+                <a href="{% url 'myblog' username=blog.user.username %}"><img class="uk-border-circle" width="120" height="120" src="{{ blog.user.image.url }}"></a>
+                <a href="{% url 'myblog' username=blog.user.username %}"><p>{{ blog.user.username }}</p></a>
             </div>
         </div>
         <div class="uk-panel uk-panel-header">

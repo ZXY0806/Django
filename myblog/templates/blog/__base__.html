@@ -70,11 +70,13 @@
         </div>
     </div>
 </body>
-<script type="text/javascript">
-    var a_login = document.getElementById('login');
-    var old_href = a_login.getAttribute("href");
-    var cur_path = window.location.pathname;
-    var new_href = old_href + '?returnUrl=' + cur_path;
-    a_login.href = new_href;
-</script>
+{% if not request.session.is_login %}
+    <script type="text/javascript">
+        var a_login = document.getElementById('login');
+        var old_href = a_login.getAttribute("href");
+        var cur_path = window.location.pathname;
+        var new_href = old_href + '?returnUrl=' + cur_path;
+        a_login.href = new_href;
+    </script>
+{% endif %}
 </html>

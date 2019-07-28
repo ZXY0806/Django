@@ -91,7 +91,8 @@ class Login(View):
     def get(self, request):
         if request.session.get('is_login'):
             return redirect(reverse('index'))
-        request.session['return_url'] = request.GET.get('returnUrl')
+        if request.GET.get('returnUrl'):
+            request.session['return_url'] = request.GET.get('returnUrl')
         return render(request, 'blog/login.html')
 
     def post(self, request):
@@ -120,6 +121,7 @@ class Login(View):
                 request.session['is_login'] = True
                 request.session['username'] = user.username
                 request.session['user_image'] = user.image.url
+                request.session['user_id'] = user.id
                 return_url = request.session.get('return_url')
                 if return_url:
                     res = {'return_url': return_url}
@@ -159,40 +161,31 @@ class Comment(View):
     def get(self, request):
         pass
 
-    def post(self, request, blog_id):
+    def post(self, request, username, blog_id):
         if not request.session.get('is_login'):
             return redirect(reverse('login'))
-        content = request.POST.get('content').strip()
-        parent_id = request.POST.get('parent_id')
-        parent = None
+        data = json.loads(request.body.decode())
+        content = data.get('content')
+        if content:
+            content = content.strip()
         if not content:
-            res = {'error': '评论内容不能为空！'}
-            return HttpResponse(json.dumps(res), content_type='application/json')
+            res = {'error': 'bad-request', 'message': '评论内容不能为空！'}
+            return JsonResponse(res)
+        parent_id = data.get('parent_id')
         if parent_id:
-            parents = models.Comment.objects.filter(pk=parent_id)
-            if parents:
-                parent = parents[0]
-        username = request.session.get('username')
-        try:
-            blog = models.Blog.objects.get(pk=blog_id)
-        except models.Blog.DoesNotExist:
-            logger.error('blog_id不存在！！！')
-            raise
-        # comment = models.Comment.objects.create(content=content, user=user, blog=blog, parent=parent)
-        # blog.comments += 1
-        # blog.save()
-        # return HttpResponse(json.dumps(comment), content_type='application/json')
+            parent = models.Comment.objects.get(pk=parent_id)
+        else:
+            parent = None
+        blog = models.Blog.objects.get(pk=blog_id)
+        user = models.User.objects.get(pk=request.session.get('user_id'))
+        comment = models.Comment.objects.create(content=content, user=user, blog=blog, parent=parent)
+        res = {}
+        return JsonResponse(res)
 
 
 class MyBlog(View):
     def get(self, request, username):
-        try:
-            user = models.User.objects.get(username=username)
-        except models.User.DoesNotExist:
-            return render(request, 'blog/404.html')
-        except models.User.MultipateObjectsReturned:
-            logger.error('用户名不唯一')
-            raise
+        user = models.User.objects.get(username=username)
         common.get_relation(request, user)
         blogs = user.blog_set.all()
         page = common.generate_page(request, blogs, 25)
@@ -225,13 +218,35 @@ class Resume(View):
         pass
 
 
-class Relation(View):
-    def get(self, request):
+def follow(request, username):
+    return_url = request.META.get('HTTP_REFERER', '/blog/')
+    if not request.session.get('is_login'):
+        request.session['return_url'] = return_url
+        return redirect(reverse('login'))
+    follower = models.User.objects.get(pk=request.session.get('user_id'))
+    followed = models.User.objects.get(username=username)
+    models.Relation.objects.create(follower=follower, followed=followed)
+    follower.follow_num += 1
+    follower.save()
+    followed.fans_num += 1
+    followed.save()
+    return redirect(return_url)
 
-        pass
 
-    def post(self, request):
-        pass
+def unfollow(request, username):
+    return_url = request.META.get('HTTP_REFERER', '/blog/')
+    if not request.session.get('is_login'):
+        request.session['return_url'] = return_url
+        return redirect(reverse('login'))
+    follower = models.User.objects.get(pk=request.session.get('user_id'))
+    followed = models.User.objects.get(username=username)
+    rela = models.Relation.objects.get(follower=follower, followed=followed)
+    rela.delete()
+    follower.follow_num -= 1
+    follower.save()
+    followed.fans_num -= 1
+    followed.save()
+    return redirect(return_url)
 
 
 def hot(request):
@@ -257,7 +272,7 @@ def following(request):
 def mycommented(request):
     if not request.session.get('is_login'):
         return redirect(reverse('login'))
-    queryset = models.Blog.objects.filter(comment__user__username=request.session.get('username'))
+    queryset = models.Blog.objects.filter(comment__user__username=request.session.get('username')).distinct()
     page = common.generate_page(request, queryset, 25)
     return render(request, 'blog/commented.html', locals())
 
