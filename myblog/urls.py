@@ -10,6 +10,7 @@ urlpatterns = [
     path('confirm/', views.confirm, name='confirm'),
     path('u/<str:username>/', views.MyBlog.as_view(), name='myblog'),
     path('u/<str:username>/blogs/<int:blog_id>/', views.Blog.as_view(), name='blog'),
+    path('edit/blog', views.EditBlog.as_view(), name='edit_blog'),
     path('u/<str:username>/blogs/<int:blog_id>/comment/', views.Comment.as_view(), name='comment'),
     path('resume/<str:username>/', views.Resume.as_view(), name='resume'),
     path('follow/<str:username>/', views.follow, name='follow'),

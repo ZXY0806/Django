@@ -157,6 +157,22 @@ class Blog(View):
         pass
 
 
+class EditBlog(View):
+    def get(self, request):
+        if not request.session.get('is_login'):
+            return redirect(reverse('login'))
+        blog_id = request.GET.get('blog_id')
+        if blog_id:
+            blog = models.Blog.objects.get(pk=blog_id)
+            if blog.user.username != request.session.get('username'):
+                return reverse(request, 'blog/404.html')
+        # 开发指针：使用django表单
+        return render(request, 'blog/edit_blog.html', locals())
+
+    def post(self, request):
+        pass
+
+
 class Comment(View):
     def get(self, request):
         pass
@@ -276,3 +292,5 @@ def mycommented(request):
     page = common.generate_page(request, queryset, 25)
     return render(request, 'blog/commented.html', locals())
 
+
+# 开发指针：个人管理主页，包括个人资料编辑、日志管理(发表和删除)
