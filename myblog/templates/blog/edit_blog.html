@@ -1,0 +1,81 @@
+{% extends 'blog/__base__.html' %}
+{% load static %}
+{% block title %}编辑日志{% endblock %}
+{% block beforehead %}
+<script>
+
+</script>
+{% endblock %}
+
+{% block name %}
+    <h1><a href="{% url 'myblog' username=request.session.username %}" >{{ request.session.username }}</a></h1>
+{% endblock %}
+
+{% block subnav %}
+    <div class="uk-container">
+        <ul class="uk-subnav uk-subnav-line uk-subnav-pill">
+            <li><a href="{% url 'index' %}" >首页</a></li>
+            <li><a href="{% url 'myblog' username=request.session.username %}">个人主页</a></li>
+            <li><a href="{% url 'edit_blog' %}">新日志</a></li>
+            <li><a href="{% url 'manage_blogs' %}">管理</a></li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <script src="{% static 'blog/js/ueditor.config.js' %}"></script>
+    <script src="{% static 'blog/js/ueditor.all.min.js' %}"></script>
+    <script src="{% static 'blog/js/lang/zh-cn/zh-cn.js' %}"></script>
+    <script>
+        var ue = UE.getEditor('content', {
+           'initialFrameHeight': 600,
+           'serverUrl': 'ueditor/controller?imagePathFormat=&filePathFormat=',
+        });
+    </script>
+
+    <div id="error" class="uk-width-1-1">
+    </div>
+    <!--<div id="loading" class="uk-width-1-1 uk-text-center">-->
+        <!--<span><i class="uk-icon-spinner uk-icon-medium uk-icon-spin"></i> 正在加载...</span>-->
+    <!--</div>-->
+    <div class="uk-width-2-3">
+    {% if blog %}
+        <form action="{% url 'edit_blog' %}?blog_id={{ blog.id }}" method="post" class="uk-form uk-form-stacked">
+    {% else %}
+        <form action="{% url 'edit_blog' %}" method="post" class="uk-form uk-form-stacked">
+    {% endif %}
+            {% csrf_token %}
+            <div class="uk-alert uk-alert-danger uk-hidden"></div>
+            <div class="uk-form-row">
+                <label class="uk-form-label">{{ form.name.label }}</label>
+                <div class="uk-form-controls">
+                    <!--<input v-model="name" name="name" type="text" placeholder="标题" class="uk-width-1-1">-->
+                    {{ form.name }}
+                </div>
+            </div>
+            <div class="uk-form-row">
+                <label class="uk-form-label">{{ form.digest.label }}</label>
+                <div class="uk-form-controls">
+                    <!--<textarea v-model="summary" rows="4" name="summary" placeholder="摘要" class="uk-width-1-1"-->
+                              <!--style="resize:none;"></textarea>-->
+                    {{ form.digest }}
+                </div>
+            </div>
+            <div class="uk-form-row">
+                <label class="uk-form-label">内容</label>
+                <div class="uk-form-controls">
+                    <!--<textarea v-model="content" rows="16" name="content" placeholder="内容" class="uk-width-1-1"-->
+                              <!--style="resize:none;"></textarea>-->
+                    {% autoescape off %}
+                    {{ form.content }}
+                    {% endautoescape %}
+                </div>
+            </div>
+            <div class="uk-form-row">
+                <button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-save"></i> 保存</button>
+                <a href="{{ request.session.return_url }}" class="uk-button"><i class="uk-icon-times"></i> 取消</a>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}

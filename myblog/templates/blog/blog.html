@@ -72,8 +72,8 @@ $(function(){
         <ul class="uk-subnav uk-subnav-line uk-subnav-pill">
             <li><a href="{% url 'index' %}" >首页</a></li>
             <li><a href="{% url 'myblog' username=blog.user.username %}">个人主页</a></li>
-            <li><a href="">新日志</a></li>
-            <li><a href="">管理</a></li>
+            <li><a href="{% url 'edit_blog' %}">新日志</a></li>
+            <li><a href="{% url 'manage_blogs' %}">管理</a></li>
         </ul>
     </div>
 {% endblock %}

@@ -161,13 +161,79 @@ class EditBlog(View):
     def get(self, request):
         if not request.session.get('is_login'):
             return redirect(reverse('login'))
+        return_url = request.META.get('HTTP_REFERER', '/blog/')
+        request.session['return_url'] = return_url
+        form = forms.BlogForm()
         blog_id = request.GET.get('blog_id')
         if blog_id:
-            blog = models.Blog.objects.get(pk=blog_id)
+            blog = models.Blog.objects.get(pk=int(blog_id))
             if blog.user.username != request.session.get('username'):
                 return reverse(request, 'blog/404.html')
-        # 开发指针：使用django表单
+            data = {
+                'name': blog.name,
+                'digest': blog.digest,
+                'content': blog.content,
+            }
+            form = forms.BlogForm(data)
         return render(request, 'blog/edit_blog.html', locals())
+
+    def post(self, request):
+        if not request.session.get('is_login'):
+            return redirect(reverse('login'))
+        form = forms.BlogForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data.get('name')
+            if not title:
+                message = '请输入文章标题'
+                return render(request, 'blog/edit_blog.html', locals())
+            digest = form.cleaned_data.get('digest')
+            if not digest:
+                message = '请输入文章摘要'
+                return render(request, 'blog/edit_blog.html', locals())
+            content = form.cleaned_data.get('content')
+            if not content:
+                message = '请输入文章内容'
+                return render(request, 'blog/edit_blog.html', locals())
+            if request.POST.get('blog_id'):
+                blog = models.Blog.objects.get(pk=int(request.POST.get('blog_id')))
+                blog.name = title
+                blog.digest = digest
+                blog.content = content
+                blog.save()
+                return redirect(reverse('blog', kwargs={'username': request.session.get('username'), 'blog_id': blog.id}))
+            else:
+                user = models.User.objects.get(pk=request.session.get('user_id'))
+                blog = models.Blog.objects.create(name=title, digest=digest, content=content, user=user)
+                return redirect(reverse('blog', kwargs={'username': request.session.get('username'), 'blog_id': blog.id}))
+        else:
+            message = '请检查输入内容'
+            return render(request, 'blog/edit_blog.html', locals())
+
+
+class DeleteBlog(View):
+    def get(self, request):
+        if not request.session.get('is_login'):
+            return redirect(reverse('login'))
+        blog_id = request.GET.get('blog_id')
+        if not blog_id:
+            res = {'error': 'bad-request', 'message': '文章不存在！'}
+            return JsonResponse(res)
+        blog = models.Blog.objects.get(pk=int(blog_id))
+        blog.delete()
+        res = {}
+        return JsonResponse(res)
+
+    def post(self, request):
+        pass
+
+
+class ManageBlogs(View):
+    def get(self, request):
+        if not request.session.get('is_login'):
+            return redirect(reverse('login'))
+        query_set = models.Blog.objects.filter(user__username=request.session.get('username'))
+        page = common.generate_page(request, query_set, 25)
+        return render(request, 'blog/manage_blogs.html', locals())
 
     def post(self, request):
         pass
@@ -215,20 +281,35 @@ class Resume(View):
     def get(self, request, username):
         if not request.session.get('is_login'):
             return redirect(reverse('login'))
-        try:
-            user = models.User.objects.get(username=username)
-        except models.DoesNotExist:
-            logging.warning('用户名不存在！！！')
-            return redirect(reverse('index'))
-        except models.MultipleObjectsReturned:
-            logging.error('用户名不唯一！！！')
-            raise
+        user = models.User.objects.get(username=username)
         common.get_relation(request, user)
         follows = user.as_follower.all().values('followed')[:9]
         fans = user.as_followed.all().values('follower')[:9]
         blogs = user.blog_set.all()
         blogs_page = common.generate_page(request, blogs, 20)
         return render(request, 'blog/resume.html', locals())
+
+    def post(self, request):
+        pass
+
+
+class UploadPhoto(View):
+    def get(self, request):
+        if not request.session.get('is_login'):
+            return redirect(reverse('login'))
+        user = models.User.objects.get(pk=request.session.get('user_id'))
+        return render(request, 'blog/upload_photo.html', locals())
+
+    def post(self, request):
+        pass
+
+
+class AccountSet(View):
+    def get(self, request):
+        if not request.session.get('is_login'):
+            return redirect(reverse('login'))
+        user = models.User.objects.get(pk=request.session.get('user_id'))
+        return render(request, 'blog/account_set.html', locals())
 
     def post(self, request):
         pass
@@ -293,4 +374,4 @@ def mycommented(request):
     return render(request, 'blog/commented.html', locals())
 
 
-# 开发指针：个人管理主页，包括个人资料编辑、日志管理(发表和删除)
+

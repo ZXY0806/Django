@@ -1,0 +1,56 @@
+{% extends "blog/__base__.html" %}
+
+{% block title %}基本资料{% endblock %}
+
+{% block beforehead %}
+
+<script>
+</script>
+
+{% endblock %}
+
+{% block name %}
+    <h1><a href="{% url 'myblog' username=user.username %}" >{{ user.username }}</a></h1>
+{% endblock %}
+
+{% block subnav %}
+    <div class="uk-container">
+        <ul class="uk-subnav uk-subnav-line uk-subnav-pill">
+            <li><a>基本资料</a></li>
+            <li><a href="{% url 'myblog' username=user.username %}">上传头像</a></li>
+            <li><a href="{% url 'edit_blog' %}">账户设置</a></li>
+        </ul>
+    </div>
+{% endblock %}
+
+{% block content %}
+
+    <div class="uk-width-medium-1-5">
+        <div class="uk-panel uk-panel-box">
+            <div class="uk-text-center">
+                <a href="{% url 'myblog' username=user.username %}"><img class="uk-border-circle" width="120" height="120" src="{{ user.image.url }}"></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="uk-width-medium-3-5">
+        <h3 class="uk-panel-title">{{ user.username }}</h3>
+        <ul class="uk-list">
+            <li><p>博龄：{{ user.created_at }}</p></li>
+            <li><p>主页：<a>{{ user.url }}</a></p></li>
+        </ul>
+    </div>
+
+    <div class="uk-width-medium-1-5">
+        <div class="uk-panel uk-panel-header">
+            <ul class="uk-list uk-list-line">
+                <li><a>我关注的人({{user.follow_num}})</a></li>
+
+            </ul>
+            <ul class="uk-list uk-list-line">
+                <li><a>我的粉丝({{user.fans_num}})</a></li>
+            </ul>
+        </div>
+    </div>
+
+{% endblock %}
