@@ -12,6 +12,7 @@ class User(models.Model):
     # sex = models.CharField(max_length=32, choices=gender, default='男')
     has_confirmed = models.BooleanField(default=False)
     image = models.ImageField(upload_to='img/', default='default/user.png', height_field=None, width_field=None, max_length=100)
+    # 如何设置upload_to的存储路径根据用户名变化，以避免不同用户同名文件互相覆盖？
     url = models.URLField(blank=True, null=True)
     follow_num = models.PositiveIntegerField(default=0)
     fans_num = models.PositiveIntegerField(default=0)

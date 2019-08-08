@@ -1,10 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
+    <meta charset="utf-8" />
+    <title>头像上传 - 博客园</title>
+    <link rel="shortcut icon" href="//common.cnblogs.com/favicon.ico" type="image/x-icon" />
+
+    <link href="/css/fineuploader.css" rel="stylesheet" />
+    <link href="/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/css/bootstrap-responsive.min.css" rel="stylesheet" />
+    <link href="/css/jquery.Jcrop.min.css" rel="stylesheet" />
+
+    <link href="/css/base.css" rel="stylesheet">
+
+    <link href="/css/crop.min.css" rel="stylesheet" />
+
+
+    <script src="//common.cnblogs.com/script/jquery.js"></script>
+    <script src="/scripts/bootstrap.min.js"></script>
+    <script src="/scripts/jquery.fineuploader-3.1.min.js"></script>
+    <script src="/scripts/jquery.Jcrop.min.js"></script>
+    <script src="/scripts/jquery.form.min.js"></script>
+
+
+        <script src="/js/crop.min.js?v=Vzt3cvGvdrPSt63MdbuR7FTCvrFNFuU3CVbaa0991GQ"></script>
+
+
 </head>
 <body>
-
+    <div style="margin-left:30px;margin-bottom:10px"><a href="https://home.cnblogs.com/set/account/">返回</a></div>
+<div id="jquery-wrapped-fine-uploader"></div>
+<div style="clear:both"></div>
+<div id="message"></div>
+<div id="crop_wrap">
+    <div id="crop_holder">
+        <div id="crop_area" class="border">
+            <img id="crop_image" alt="" src="" class="preview-image" style="display:none" />
+        </div>
+        <div id="preview_area">
+            <div id="preview_title">当前头像</div>
+            <div id="preview_small_text" class="preview-text">48px × 48px</div>
+            <div id="preview_small_wrap" class="border"><img id="preview_small" alt="" src="//pic.cnblogs.com/face/1606258/20190228151933.png" class="preview-image" style="" /></div>
+            <div id="preview_large_text" class="preview-text">180px × 180px</div>
+            <div id="preview_large_wrap" class="border"><img id="preview_large" alt="" src="//pic.cnblogs.com/avatar/1606258/20190228151933.png" class="preview-image" style="" /></div>
+        </div>
+    </div>
+    <div id="crop_operation" style="display:none;">
+        <form id="form_crop" action="/avatar/crop" method="post">
+            <input type="hidden" name="x" id="x">
+            <input type="hidden" name="y" id="y">
+            <input type="hidden" name="w" id="w">
+            <input type="hidden" name="h" id="h">
+            <input type="hidden" name="imgsrc" id="imgsrc">
+            <input id="crop_operation_submit" type="submit" value="裁切并保存" /><span id="crop_operation_msg" style="display:none" class="green"></span>
+        </form>
+    </div>
+    <div id="croped_message" class="green"></div>
+</div>
 </body>
 </html>

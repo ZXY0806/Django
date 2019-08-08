@@ -2,12 +2,14 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views.generic import View
 from django.urls import reverse
+from django.conf import settings
 from . import common
 from . import models
 from . import forms
 from datetime import datetime, timedelta
 import json, logging
 from itertools import chain
+import os
 # Create your views here.
 
 logger = logging.getLogger('console')
@@ -294,14 +296,26 @@ class Resume(View):
 
 
 class UploadPhoto(View):
-    def get(self, request):
+    def get(self, request, username):
         if not request.session.get('is_login'):
             return redirect(reverse('login'))
         user = models.User.objects.get(pk=request.session.get('user_id'))
         return render(request, 'blog/upload_photo.html', locals())
 
-    def post(self, request):
-        pass
+    def post(self, request, username):
+        if not request.session.get('is_login'):
+            return redirect(reverse('login'))
+        file_obj = request.FILES.get('file_obj')
+        path = os.path.join(settings.MEDIA_ROOT, 'img/', file_obj.name)
+        with open(path, 'wb') as f:
+            for chunk in file_obj.chunks():
+                f.write(chunk)
+        user = models.User.objects.get(pk=request.session.get('user_id'))
+        user.image = 'img/' + file_obj.name
+        user.save()
+        request.session['user_image'] = user.image.url
+        res = {}
+        return JsonResponse(res)
 
 
 class AccountSet(View):

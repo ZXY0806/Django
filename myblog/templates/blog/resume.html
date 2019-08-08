@@ -17,8 +17,8 @@
     <div class="uk-container">
         <ul class="uk-subnav uk-subnav-line uk-subnav-pill">
             <li><a>基本资料</a></li>
-            <li><a href="{% url 'myblog' username=user.username %}">上传头像</a></li>
-            <li><a href="{% url 'edit_blog' %}">账户设置</a></li>
+            <li><a href="{% url 'upload_photo' username=request.session.username %}">上传头像</a></li>
+            <li><a href="{% url 'account_set' username=request.session.username %}">账户设置</a></li>
         </ul>
     </div>
 {% endblock %}
