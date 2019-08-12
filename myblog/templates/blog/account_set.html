@@ -1,60 +1,222 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <title>头像上传 - 博客园</title>
-    <link rel="shortcut icon" href="//common.cnblogs.com/favicon.ico" type="image/x-icon" />
+{% extends "blog/__base__.html" %}
 
-    <link href="/css/fineuploader.css" rel="stylesheet" />
-    <link href="/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="/css/bootstrap-responsive.min.css" rel="stylesheet" />
-    <link href="/css/jquery.Jcrop.min.css" rel="stylesheet" />
+{% block title %}账户设置{% endblock %}
 
-    <link href="/css/base.css" rel="stylesheet">
+{% block beforehead %}
 
-    <link href="/css/crop.min.css" rel="stylesheet" />
+<script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
 
+function csrfSafeMethod(method) {
+    // 这些HTTP方法不要求CSRF包含
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
 
-    <script src="//common.cnblogs.com/script/jquery.js"></script>
-    <script src="/scripts/bootstrap.min.js"></script>
-    <script src="/scripts/jquery.fineuploader-3.1.min.js"></script>
-    <script src="/scripts/jquery.Jcrop.min.js"></script>
-    <script src="/scripts/jquery.form.min.js"></script>
+    function passwordToggle(){
+        $("#cur_pwd").toggle();
+        $("#mdy_pwd").toggle();
+    }
+    function emailToggle(){
+        $("#cur_email").toggle();
+        $("#mdy_email").toggle();
+    }
+    function loginNameToggle(){
+        $("#cur_name").toggle();
+        $("#mdy_name").toggle();
+    }
+    function changeLoginName(){
+        var new_username = $("#txt_loginName").val();
+        if(new_username == ''){
+            $("#tip_loginName").html('请输入新用户名');
+            return;
+        }
+        var old_username = $("#username").html();
+        if(new_username == old_username){
+            $("#tip_loginName").html('新用户名不能与原用户名相同');
+            return;
+        }
+        $("#tip_loginName").html("修改操作中，请稍候...");
+        postJSON("/blog/set/username", {'username': new_username}, function(err, result){
+            if(err){
+                $("#tip_loginName").html(err.message);
+                return;
+            }
+            $("#tip_loginName").html("修改成功，请重新登录");
+            window.setTimeout("window.location='/blog/login/'",2000);
+        });
+    }
+    function changePassWord(){
+        var old_pwd = $("#old_pwd").val();
+        if(old_pwd == ''){
+            $("#tip_password").html('请输入旧账户密码');
+            return;
+        }
+        var encrypt_old_pwd = sha1(old_pwd).toString();
+        var new_pwd = $("#new_pwd").val();
+        if(new_pwd == ''){
+            $("#tip_password").html('请输入新账户密码');
+            return;
+        }
+        var encrypt_new_pwd = sha1(new_pwd).toString();
+        var confirm_pwd = $("#confirm_pwd").val();
+        if(confirm_pwd !== new_pwd){
+            $("#tip_password").html('两次输入的新密码不一致');
+            return;
+        }
+        var encrypt_confirm_pwd = sha1(confirm_pwd).toString();
+        $("#tip_loginName").html("修改操作中，请稍候...");
+        var data = {
+            old_pwd: encrypt_old_pwd,
+            password1: encrypt_new_pwd,
+            password2: encrypt_confirm_pwd,
+        };
+        postJSON('/blog/set/password/', data, function(err, result){
+            if(err){
+                $("#tip_password").html(err.message);
+                return;
+            }
+            $("#tip_password").html("修改成功，请重新登录");
+            window.setTimeout("window.location='/blog/login/'",2000);
+        });
+    }
+    function changeEmail(){
+        var old_pwd = $("#account_pwd").val();
+        if(old_pwd == ''){
+            $("#tip_email").html('请输入账户密码');
+            return;
+        }
+        var encrypt_old_pwd = sha1(old_pwd).toString();
+        var new_email = $("#new_email").val();
+        if(new_email == ''){
+            $("#tip_email").html('请输入新注册邮箱');
+            return;
+        }
+        var regex = new RegExp('(\\w|\-)+@((\\w|\-)+\\.)+[a-z]{2,3}');
+        if (!regex.test(new_email)) {
+            $("#tip_email").html("邮箱格式不正确");
+        }
+        var data = {
+            password: encrypt_old_pwd,
+            new_email: new_email,
+        };
+        postJSON('/blog/set/email/', data, function(err, result){
+            if(err){
+                $("#tip_email").html(err.message);
+                return;
+            }
+            $("#tip_email").html("修改成功，请重新登录");
+            window.setTimeout("window.location='/blog/login/'",2000);
+        });
+    }
+</script>
 
+{% endblock %}
 
-        <script src="/js/crop.min.js?v=Vzt3cvGvdrPSt63MdbuR7FTCvrFNFuU3CVbaa0991GQ"></script>
+{% block name %}
+    <h1><a href="{% url 'myblog' username=user.username %}" >{{ user.username }}</a></h1>
+{% endblock %}
 
+{% block subnav %}
+    <div class="uk-container">
+        <ul class="uk-subnav uk-subnav-line uk-subnav-pill">
+            <li><a href="{% url 'resume' username=user.username %}">基本资料</a></li>
+            <li><a href="{% url 'upload_photo' username=user.username %}">上传头像</a></li>
+            <li><a >账户设置</a></li>
+        </ul>
+    </div>
+{% endblock %}
 
-</head>
-<body>
-    <div style="margin-left:30px;margin-bottom:10px"><a href="https://home.cnblogs.com/set/account/">返回</a></div>
-<div id="jquery-wrapped-fine-uploader"></div>
-<div style="clear:both"></div>
-<div id="message"></div>
-<div id="crop_wrap">
-    <div id="crop_holder">
-        <div id="crop_area" class="border">
-            <img id="crop_image" alt="" src="" class="preview-image" style="display:none" />
+{% block content %}
+
+    <div class="uk-width-medium-3-5">
+        <div class="uk-alert uk-alert-danger uk-hidden"></div>
+        <div class="uk-article">
+            <div align="left" style="float:left">用户名</div>
+            <div align="right"><a href="###" onclick="loginNameToggle();return false;">修改</a></div>
+            <hr style="margin:5px">
+            <div id="cur_name" style="display:inline">
+                <div align="left" style="float:left">当前用户名</div>
+                <div id="username" align="right">{{ user.username }}</div>
+            </div>
+            <div id="mdy_name" style="display:none">
+                <span>新登录用户名：</span>
+                <input id="txt_loginName" type="text" /> 4-30个字符<br />
+                <div>
+                    <input type="button" onclick="changeLoginName();" value="保存" />
+                    <input type="button" onclick="loginNameToggle();" value="取消" style="margin-left: 3px;" />
+                    <br />
+                    <span id="tip_loginName" class="text_red"></span>
+                </div>
+            </div>
         </div>
-        <div id="preview_area">
-            <div id="preview_title">当前头像</div>
-            <div id="preview_small_text" class="preview-text">48px × 48px</div>
-            <div id="preview_small_wrap" class="border"><img id="preview_small" alt="" src="//pic.cnblogs.com/face/1606258/20190228151933.png" class="preview-image" style="" /></div>
-            <div id="preview_large_text" class="preview-text">180px × 180px</div>
-            <div id="preview_large_wrap" class="border"><img id="preview_large" alt="" src="//pic.cnblogs.com/avatar/1606258/20190228151933.png" class="preview-image" style="" /></div>
+        <div class="uk-article">
+            <div align="left" style="float:left">密码</div>
+            <div align="right"><a href="###" onclick="passwordToggle();return false;">修改</a></div>
+            <hr style="margin:5px">
+            <div id="cur_pwd" style="display:inline">
+                <div align="left" style="float:left">当前密码</div>
+                <div align="right">******</div>
+            </div>
+            <div id="mdy_pwd" style="display:none">
+                <span>旧密码：</span>
+                <input id="old_pwd" type="password" /><br />
+                <span>新密码：</span>
+                <input id="new_pwd" type="password" /> 4-30个字符<br />
+                <span>确认密码：</span>
+                <input id="confirm_pwd" type="password" /><br />
+                <div>
+                    <input type="button" onclick="changePassWord();" value="保存" />
+                    <input type="button" onclick="passwordToggle();" value="取消" style="margin-left: 3px;" />
+                    <br />
+                    <span id="tip_password" class="text_red"></span>
+                </div>
+            </div>
+        </div>
+        <div class="uk-article">
+            <div align="left" style="float:left">邮箱</div>
+            <div align="right"><a href="###" onclick="emailToggle();return false;">修改</a></div>
+            <hr style="margin:5px">
+            <div id="cur_email" style="display:inline">
+                <div align="left" style="float:left">当前邮箱</div>
+                <div align="right">{{ user.email }}</div>
+            </div>
+            <div id="mdy_email" style="display:none">
+                <span>账户密码：</span>
+                <input id="account_pwd" type="password" /><br />
+                <span>新注册邮箱：</span>
+                <input id="new_email" type="text" /><br />
+                <div>
+                    <input type="button" onclick="changeEmail();" value="保存" />
+                    <input type="button" onclick="emailToggle();" value="取消" style="margin-left: 3px;" />
+                    <br />
+                    <span id="tip_email" class="text_red"></span>
+                </div>
+            </div>
         </div>
     </div>
-    <div id="crop_operation" style="display:none;">
-        <form id="form_crop" action="/avatar/crop" method="post">
-            <input type="hidden" name="x" id="x">
-            <input type="hidden" name="y" id="y">
-            <input type="hidden" name="w" id="w">
-            <input type="hidden" name="h" id="h">
-            <input type="hidden" name="imgsrc" id="imgsrc">
-            <input id="crop_operation_submit" type="submit" value="裁切并保存" /><span id="crop_operation_msg" style="display:none" class="green"></span>
-        </form>
+    <div class="uk-width-medium-2-5">
     </div>
-    <div id="croped_message" class="green"></div>
-</div>
-</body>
-</html>
+
+{% endblock %}

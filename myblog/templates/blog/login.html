@@ -49,7 +49,7 @@ $(function(){
                     username = this.username.trim(),
                     data = {
                         username: username,
-                        password: this.password === '' ? '' : sha1(username + ':' + this.password).toString()
+                        password: this.password === '' ? '' : sha1(this.password).toString()
                     };
                 $form.postJSON('{% url 'login' %}', data, function(err, r){
                     if(!err){

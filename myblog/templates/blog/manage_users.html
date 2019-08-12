@@ -1,83 +1,606 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+    <title>帐户设置 - 博客园</title>
 
 
-{% extends '__base__.html' %}
+    <link href="//common.cnblogs.com/favicon.ico" rel="shortcut icon" />
 
-{% block title %}用户{% endblock %}
+    <link rel="stylesheet" href="/css/reset.min.css?v=NNKSv2cA90mrhu98reNDRA-Me_BeHP9fhzvfTv39pb0" />
+    <link rel="stylesheet" href="/css/home_common.css?v=8h9V8hkCCajAlYCQTOkqgF-CYDhdI0sknRaUIsm8dI8" />
 
-{% block beforehead %}
 
-<script>
-function initVM(result) {
-    $('#vm').show();
-    var vm = new Vue({
-        el: '#vm',
-        data: {
-            users: result.users,
-            page: result.page
+    <link href="/css/settings.css?v=T3oktRO_TTiApQekrpfvXhFSrKT4t6c8hRzsdAIVGhc" rel="Stylesheet" type="text/css" />
+
+
+
+
+
+        <link rel="stylesheet" href="/css/mobile.min.css?v=Xro6iVLt8yu0UxiQMhVd58nMFu-PeXDF9YFWc0polX8" media="screen and (max-width:768px)" />
+        <script src="//common.cnblogs.com/script/jquery.js"></script>
+
+
+
+    <script src="/js/jsencrypt.min.js?v=jUvVD3Qspr-iOB4RpKWIehM5eazlP-246GWn1Ok9CqQ"></script>
+    <script type="text/javascript">
+        function charEscape(c) {
+            c = c.replace(/"/g, '\\"');
+            c = c.replace(/'/g, "\\'");
+            return c;
         }
-    });
-}
-$(function() {
-    getJSON('/api/users', {
-        page: {{ page_index }}
-    }, function (err, results) {
-        if (err) {
-            return fatal(err);
+        function loginNameToggle() {
+            $("#loginName_display_block").toggle();
+            $("#loginName_edit_block").toggle();
+            $("#txt_loginName").val('');
+            $("#tip_loginName").html('');
         }
-        $('#loading').hide();
-        initVM(results);
-    });
-});
-</script>
+        function passwordToggle() {
+            $("#password_display_block").toggle();
+            $("#password_edit_block").toggle();
+            $("#txt_oldpwd").val('');
+            $("#txt_newpwd").val('');
+            $("#txt_confirmpwd").val('');
+            $("#tip_password").html('');
+        }
+        function DisplayNameToggle() {
+            $("#displayName_display_block").toggle();
+            $("#displayName_edit_block").toggle();
+            $("#txt_displayName").val('');
+            $("#tip_displayName").html('');
+        }
+        function EmailToggle() {
+            $("#email_display_block").toggle();
+            $("#email_edit_block").toggle();
+            $("#txt_email").val('');
+            $("#tip_email").html('');
+        }
+        function NotificationEmailToggle() {
+            $("#NotificationEmail_display_block").toggle();
+            $("#NotificationEmail_edit_block").toggle();
+            $("#txt_NotificationEmail").val('');
+            $("#tip_NotificationEmail").html('');
+        }
+        function NotificationTypeToggle(notificationType) {
+            $("#NotificationType_display_block").toggle();
+            $("#NotificationType_edit_block").toggle();
+            $("#ddl_NotificationType").val(notificationType);
+            $("#tip_NotificationType").html('');
+        }
+        function ChangeLoginName() {
+            var value = $("#txt_loginName").val();
+            if (value == '') {
+                $("#tip_loginName").html('请输入新登录用户名');
+                return;
+            }
+            var oldLoginName = $('#loginName_display_block div').html();
+            if (value == oldLoginName) {
+                $("#tip_loginName").html('新登录用户名不能与原登录用户名相同');
+                return;
+            }
+            if (value.length < 2) {
+                $("#tip_loginName").html('登录用户名不能少于2个字符');
+                return;
+            }
+            if (value.length > 30) {
+                $("#tip_loginName").html('登录用户名不能超过30个字符');
+                return;
+            }
+            $("#tip_loginName").html("修改操作中，请稍候...");
 
-{% endblock %}
+            var ajax_data = {
+                oldLoginName: oldLoginName,
+                newLoginName: value
+            };
 
-{% block content %}
+            $.ajax({
+                url: '/user/ChangeLoginName',
+                data: JSON.stringify(ajax_data),
+                type: 'post',
+                dataType: 'text',
+                contentType: 'application/json; charset=UTF-8',
+                cache: false,
+                success: function (data) {
+                    if (data.indexOf('修改成功') > -1) {
+                        $("#tip_loginName").html(data + "，立即<a href='###' onclick='logout_immediate();return false;'>重新登录</a>");
+                        $('#divLoginName').html(ajax_data.newLoginName);
+                        $("#loginName_edit_box").hide();
+                    }
+                    else {
+                        $("#tip_loginName").html(data);
+                    }
+                },
+                error: function (xhr) {
+                    $("#tip_loginName").html(xhr.responseText);
+                }
+            });
+        }
 
-    <div class="uk-width-1-1 uk-margin-bottom">
-        <div class="uk-panel uk-panel-box">
-            <ul class="uk-breadcrumb">
-                <li class="uk-active"><span>用户</span></li>
-                <li><a href="/manage/blogs">日志</a></li>
-                <li><a href="/manage/comments">评论</a></li>
-            </ul>
+        function ChangeDisplayName() {
+            var value = $("#txt_displayName").val();
+            if (value == '') {
+                $("#tip_displayName").html('请输入新显示名称');
+                return;
+            }
+            var oldDisplayName = $('#displayName_display_block div').html();
+            if (value == oldDisplayName) {
+                $("#tip_displayName").html('新显示名称不能与原显示名称相同');
+                return;
+            }
+            if (value.length < 2) {
+                $("#tip_displayName").html('显示名称不能少于2个字符');
+                return;
+            }
+            if (value.replace(/[^\x00-\xff]/g, 'aa').length > 20) {
+                $("#tip_displayName").html('显示名称不能超过20个字符/10个中文字');
+                return;
+            }
+            var ajax_data = {
+                oldDisplayName: oldDisplayName,
+                newDisplayName: value
+            };
+            $("#tip_displayName").html("修改操作中，请稍候...");
+            $.ajax({
+                url: '/user/ChangeDisplayName',
+                data: JSON.stringify(ajax_data),
+                type: 'post',
+                dataType: 'text',
+                contentType: 'application/json; charset=UTF-8',
+                cache: false,
+                success: function (data) {
+                    if (data.indexOf('修改成功') > -1) {
+                        $('#divDisplayName').text(ajax_data.newDisplayName);
+                        $('#displayName_display_block div').html(ajax_data.newDisplayName)
+                        //$('#displayName_display_block').show();
+                        //$('#displayName_edit_block').hide();
+                        $("#tip_displayName").html(data);
+                    }
+                    else {
+                        $("#tip_displayName").html(data);
+                        if (data.d == '') {
+                            login();
+                        }
+                    }
+                },
+                error: function (xhr) {
+                    $("#tip_displayName").html(xhr.responseText);
+                }
+            });
+        }
+
+        function ChangeNotificationEmail() {
+            var value = $("#txt_NotificationEmail").val();
+            if (value == '') {
+                $("#tip_NotificationEmail").html('请输入新通知邮箱地址');
+                return;
+            }
+            var oldEmail = $('#NotificationEmail_display_block div').html();
+            if (value == oldEmail) {
+                $("#tip_NotificationEmail").html('新通知邮箱地址不能与原通知邮箱地址相同');
+                return;
+            }
+            var regex = new RegExp('(\\w|\-)+@((\\w|\-)+\\.)+[a-z]{2,3}');
+            if (!regex.test(value)) {
+                $("#tip_NotificationEmail").html("通知邮件格式不正确");
+            }
+            $("#tip_NotificationEmail").html("修改操作中，请稍候...");
+            $.ajax({
+                url: '/user/ChangeNotificationEmail',
+                data: '{oldEmail:"' + $.trim(oldEmail) + '",newEmail:"' + value + '"}',
+                type: 'post',
+                dataType: 'text',
+                contentType: 'application/json; charset=UTF-8',
+                cache: false,
+                success: function (data) {
+                    if (data == "修改成功") {
+                        $("#tip_NotificationEmail").html("修改成功");
+                    } else {
+                        $("#tip_NotificationEmail").html(data);
+                    }
+                },
+                error: function (xhr) {
+                    $("#tip_NotificationEmail").html(xhr.responseText);
+                }
+            });
+        }
+        function ChangeEmail() {
+            var value = $("#txt_email").val();
+            if (value == '') {
+                $("#tip_email").html('请输入新注册邮箱地址');
+                return;
+            }
+            var oldEmail = $('#email_display_block div').html();
+            if (value == oldEmail) {
+                $("#tip_email").html('新注册邮箱地址不能与原注册邮箱地址相同');
+                return;
+            }
+            var regex = new RegExp('(\\w|\-)+@((\\w|\-)+\\.)+[a-z]{2,3}');
+            if (!regex.test(value)) {
+                $("#tip_email").html("注册邮件格式不正确");
+            }
+            var password = $('#txt_change_email_password').val();
+            if(password == '')
+            {
+                $("#tip_email").html('请输入帐户密码');
+                return;
+            }
+
+            var encrypt = new JSEncrypt();
+            encrypt.setPublicKey('MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCp0wHYbg/NOPO3nzMD3dndwS0MccuMeXCHgVlGOoYyFwLdS24Im2e7YyhB0wrUsyYf0/nhzCzBK8ZC9eCWqd0aHbdgOQT6CuFQBMjbyGYvlVYU2ZP7kG9Ft6YV6oc9ambuO7nPZh+bvXH0zDKfi02prknrScAKC0XhadTHT3Al0QIDAQAB');
+            var encrypted_input = encrypt.encrypt(password);
+
+            $("#tip_email").html("修改操作中，请稍候...");
+            $.ajax({
+                url: '/user/ChangeEmail',
+                data: JSON.stringify({password: encrypted_input, oldEmail: $.trim(oldEmail), newEmail: value}),
+                type: 'post',
+                dataType: 'text',
+                contentType: 'application/json; charset=UTF-8',
+                cache: false,
+                success: function (data) {
+                    if (data == "修改成功") {
+                        $("#tip_email").html("已给您的新注册邮箱发了邮件，通过邮件激活后，修改才会生效");
+                    } else {
+                        $("#tip_email").html(data);
+                    }
+                },
+                error: function (xhr) {
+                    $("#tip_email").html(xhr.responseText);
+                }
+            });
+        }
+        function ChangePwd() {
+            var value = $("#txt_newpwd").val();
+            if (value == '') {
+                $("#tip_password").html('请输入密码');
+                return;
+            }
+            if (value != $("#txt_confirmpwd").val()) {
+                $("#tip_password").html('两次密码输入不一致');
+                return;
+            }
+            var oldpwd = $("#txt_oldpwd").val();
+            if (value == oldpwd) {
+                $("#tip_password").html("新密码不能与旧密码相同");
+                return;
+            }
+            $("#tip_password").html("修改操作中，请稍候...");
+
+            var encrypt = new JSEncrypt();
+            encrypt.setPublicKey('MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCp0wHYbg/NOPO3nzMD3dndwS0MccuMeXCHgVlGOoYyFwLdS24Im2e7YyhB0wrUsyYf0/nhzCzBK8ZC9eCWqd0aHbdgOQT6CuFQBMjbyGYvlVYU2ZP7kG9Ft6YV6oc9ambuO7nPZh+bvXH0zDKfi02prknrScAKC0XhadTHT3Al0QIDAQAB');
+            var encrypted_input1 = encrypt.encrypt(oldpwd);
+            var encrypted_input2 = encrypt.encrypt(value);
+
+            var ajax_data = {
+                oldpwd: encrypted_input1,
+                newpwd: encrypted_input2
+            };
+
+            $.ajax({
+                url: '/user/ChangPwd',
+                data: JSON.stringify(ajax_data),
+                type: 'post',
+                dataType: 'text',
+                contentType: 'application/json; charset=UTF-8',
+                cache: false,
+                success: function (data) {
+                    if (data.indexOf('修改成功') > -1) {
+                        $("#tip_password").html(data + '，立即<a href="###" onclick="logout_immediate();return false;">重新登录</a>');
+                    }
+                    else
+                        $("#tip_password").html(data);
+                },
+                error: function (xhr) {
+                    $("#tip_password").html(xhr.responseText);
+                }
+            });
+        }
+
+        function ChangeNotificationType() {
+            $("#tip_NotificationType").html("修改操作中，请稍候...");
+            $.ajax({
+                url: '/user/ChangeNotificationType',
+                data: '{notificationType:"' + $.trim($("#ddl_NotificationType").val()) + '"}',
+                type: 'post',
+                dataType: 'text',
+                contentType: 'application/json; charset=UTF-8',
+                cache: false,
+                success: function (data) {
+                    if (data == "修改成功") {
+                        $("#tip_NotificationType").html("修改成功");
+                    } else {
+                        $("#tip_NotificationType").html(data);
+                    }
+                },
+                error: function (xhr) {
+                    $("#tip_NotificationType").html(xhr.responseText);
+                }
+            });
+        }
+    </script>
+
+</head>
+<body>
+    <div id="top">
+        <div id="top_left">
+            <a href="//www.cnblogs.com">首页</a>
+            <a href="//news.cnblogs.com/">新闻</a>
+            <a href="//zzk.cnblogs.com/">找找看</a>
+            <a href="//academy.cnblogs.com/">学习计划</a>
+        </div>
+    </div>
+    <div class="clear"></div>
+    <div id="wrapper">
+        <div id="header">
+            <div id="logo">
+                <a href="//www.cnblogs.com" title="返回博客园首页">
+                <img src="//common.cnblogs.com/images/logo/logo20170227.png" alt="logo" style="width:165px;height:55px;" />
+                </a>
+            </div>
+            <div id="nav_block">
+                <a href="/">园子</a> ·
+                <a href="/followees/">关注</a> ·
+                <a href="/followers/">粉丝</a> ·
+                <a href="/feed/all/">随便看看</a> ·
+                <a href="//msg.cnblogs.com/msg/inbox" target="_blank">消息
+                    <span id="msg_count"></span>
+                </a>
+            </div>
+            <div class="clear"></div>
+            <div id="header_user">
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div id="container">
+            <div id="app_bar">
+    <p class="app_r_3"></p><p class="app_r_2"></p><p class="app_r_1"></p>
+    <div id="app_list_wrapper">
+        <ul class="app_list">
+            <li>
+                <img src="//common.cnblogs.com/images/ico_ing.gif" alt=""><a id="app_ing" href="https://ing.cnblogs.com/">闪存</a>
+            </li>
+            <li>
+                <em><a href="https://i.cnblogs.com/" target="_blank">写博</a></em><img src="//common.cnblogs.com/images/ico_blog.gif" alt=""><a id="app_blog" href="/blog/">博客</a>
+            </li>
+            <li>
+                <em><a href="//group.cnblogs.com/newpost/">发言</a></em><img src="//common.cnblogs.com/images/ico_group.gif" alt=""><a id="app_group" href="//group.cnblogs.com/">小组</a>
+            </li>
+            <li>
+                <em><a href="//news.cnblogs.com/n/publish" target="_blank">投递</a></em><img src="//common.cnblogs.com/images/ico_news.gif" alt=""><a id="app_news" href="/news/">新闻</a>
+            </li>
+            <li>
+                <em><a href="https://q.cnblogs.com/q/new" target="_self">提问</a></em><img src="//common.cnblogs.com/images/ico_question.gif" alt=""><a id="app_q" href="https://q.cnblogs.com/">博问</a>
+            </li>
+            <li>
+                <em><a href="#" target="_blank" onclick="AddToWz();return false;">添加</a></em><img src="//common.cnblogs.com/images/ico_bookmark.gif" alt=""><a id="app_wz" href="//wz.cnblogs.com/">收藏</a>
+            </li>
+            <li>
+                <em><a href="//job.cnblogs.com/admin/" target="_blank">发布</a></em><img src="//common.cnblogs.com/images/ico_job.gif" alt=""><a id="app_job" href="/jobs/" >招聘</a>
+            </li>
+            <li>
+                <img src="//common.cnblogs.com/images/ico_kb.gif" alt=""><a id="app_kb" href="/kb/">文库</a>
+            </li>
+        </ul>
+        <div class="app_setting">
+            <a href="//group.cnblogs.com/forum/public/" class="flag_edit" target="_blank">问题反馈</a>
+        </div>
+    </div>
+    <p class="app_r_1"></p><p class="app_r_2"></p><p class="app_r_3"></p>
+</div>
+            <div id="container_content">
+
+                <div id="main"  onclick="javascript:void(0)">
+
+<div class="topic_nav_block_wrapper">
+    <ul class="topic_nav_block">
+        <li><a href="/set/avatar/" class="">上传头像</a></li>
+        <li><a href="/set/account/" class="current_nav">帐户设置</a></li>
+        <li><a href="/set/profile/" class="">基本资料</a></li>
+        <li><a href="/set/intro/" class="">个人信息</a></li>
+        <li><a href="/set/contact/" class="">联系方式</a></li>
+            <li><a target='_blank' href='https://i.cnblogs.com/Configure.aspx'>博客设置</a></li>
+    </ul>
+    <div class="clear"></div>
+</div>
+
+<form id="myform">
+    <div class="account_into_block">
+        <h3 id="login-name">
+            <div><a href="###" onclick="loginNameToggle();return false;" class="gray2">修改</a></div>
+            登录用户名
+        </h3>
+        <div id="loginName_display_block">
+            <div class="account_right_info">射手新</div>
+            <span class="account_title">您的登录用户名</span><span id="txt_loginName_1" class="text_red"></span>
+        </div>
+        <div id="loginName_edit_block" class="hide account_edit_block">
+            <div class="account_right_info" id="divLoginName">射手新</div>
+            <div id="loginName_edit_box">
+                <span class="account_title">新登录用户名：</span>
+                <input id="txt_loginName" class="tb_m" type="text" /> 4-30个字符<br />
+                <div class="account_btn_wrapper">
+                    <input type="button" onclick="ChangeLoginName();" value="保存" />
+                    <input type="button" onclick="loginNameToggle();" value="取消" style="margin-left: 3px;" />
+                </div>
+            </div>
+            <span id="tip_loginName" class="text_red"></span>
+        </div>
+    </div>
+    <div class="account_into_block">
+        <h3 id="password">
+            <div><a href="###" onclick="passwordToggle();return false;" class="gray2">修改</a></div>
+            密　码
+        </h3>
+        <div id="password_display_block">
+            <div class="account_right_info">******</div>
+            <span class="account_title">您的密码</span>
+        </div>
+        <div id="password_edit_block" class="hide account_edit_block">
+            <table>
+                <tr>
+                    <td class="account_title">旧密码：</td>
+                    <td>
+                        <input id="txt_oldpwd" class="tb_m" type="password" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="account_title">新密码：</td>
+                    <td>
+                        <input id="txt_newpwd" class="tb_m" type="password" /> 8-30个字符，必须包含字母、数字、特殊字符
+                    </td>
+                </tr>
+                <tr>
+                    <td class="account_title">确认密码：</td>
+                    <td>
+                        <input id="txt_confirmpwd" class="tb_m" type="password" />
+                    </td>
+                </tr>
+            </table>
+            <div class="account_btn_wrapper">
+                <input type="button" onclick="ChangePwd();" value="保存" style="margin-left: 0;" />
+                <input type="button" onclick="passwordToggle();" value="取消" style="margin-left: 3px;" />
+                <br />
+                <span id="tip_password" class="text_red"></span>
+            </div>
+        </div>
+    </div>
+    <div class="account_into_block">
+        <h3 id="display-name">
+            <div><a href="###" onclick="DisplayNameToggle();return false;" class="gray2">修改</a></div>
+            显示名称
+        </h3>
+        <div id="displayName_display_block">
+            <div class="account_right_info">漫漫芜</div>
+            <span class="account_title">您的显示名称</span><span id="tip_displayName_1" class="text_red"></span>
+        </div>
+        <div id="displayName_edit_block" class="hide account_edit_block">
+            <div class="account_right_info" id="divDisplayName">漫漫芜</div>
+            <span class="account_title">新显示名称：</span>
+            <input id="txt_displayName" class="tb_m" type="text" /> 2-20字符
+            <div class="account_btn_wrapper">
+                <input type="button" onclick="ChangeDisplayName();" value="保存" style="margin-left: 0;" />
+                <input type="button" onclick="DisplayNameToggle();" value="取消" style="margin-left: 3px;" />
+                <span id="tip_displayName" class="text_red"></span>
+            </div>
+        </div>
+
+    </div>
+    <div class="account_into_block">
+        <h3 id="account-email">
+            <div><a href="###" onclick="EmailToggle();return false;" class="gray2">修改</a></div>
+            注册邮箱
+        </h3>
+        <div id="email_display_block">
+            <div class="account_right_info">402223302@qq.com</div>
+            <span class="account_title">您的注册邮箱</span>
+        </div>
+        <div id="email_edit_block" class="hide account_edit_block">
+            <span class="account_title">　帐户密码： </span>
+            <input id="txt_change_email_password" style="width:200px;" class="tb_m" type="password" /><br />
+            <span class="account_title">新注册邮箱：</span>
+            <input id="txt_email" class="tb_m" style="width:200px;" type="text" />
+            <div class="account_btn_wrapper">
+                <input type="button" onclick="ChangeEmail();" value="保存" style="margin-left: 0;" />
+                <input type="button" onclick="EmailToggle();" value="取消" style="margin-left: 3px;" />
+                <br />
+                <span id="tip_email" class="text_red"></span>
+            </div>
         </div>
     </div>
 
-    <div id="error" class="uk-width-1-1">
+    <div class="account_into_block">
+        <h3 id="notification-email">
+            <div><a href="###" onclick="NotificationEmailToggle(); return false;" class="gray2">修改</a></div>
+            通知邮箱
+        </h3>
+        <div id="NotificationEmail_display_block">
+            <div class="account_right_info">402223302@qq.com</div>
+            <span class="account_title">您的通知邮箱</span>
+        </div>
+        <div id="NotificationEmail_edit_block" class="hide account_edit_block">
+            <span class="account_title">新通知邮箱：</span>
+            <input id="txt_NotificationEmail" style="width:200px;" class="tb_m" type="text" />
+            <div class="account_btn_wrapper">
+                <input type="button" onclick="ChangeNotificationEmail();" value="保存" style="margin-left: 0;" />
+                <input type="button" onclick="NotificationEmailToggle();" value="取消" style="margin-left: 3px;" />
+                <br />
+                <span id="tip_NotificationEmail" class="text_red"></span>
+            </div>
+        </div>
     </div>
 
-    <div id="loading" class="uk-width-1-1 uk-text-center">
-        <span><i class="uk-icon-spinner uk-icon-medium uk-icon-spin"></i> 正在加载...</span>
+    <div class="account_into_block">
+        <h3 id="notification-type">
+            <div><a href="###" onclick="NotificationTypeToggle(1); return false;" class="gray2">修改</a></div>
+            回复通知类型
+        </h3>
+        <div id="NotificationType_display_block">
+            <div class="account_right_info">邮件</div>
+            <span class="account_title">您的回复通知类型</span>
+        </div>
+        <div id="NotificationType_edit_block" class="hide account_edit_block">
+            <span class="account_title">回复通知类型：</span>
+            <select id="ddl_NotificationType" name="ddl_NotificationType">
+                <option value="0">无</option>
+                <option value="1">邮件</option>
+                <option value="2">短消息</option>
+                <option value="3">邮件和短消息</option>
+            </select>
+            <div class="account_btn_wrapper">
+                <input type="button" onclick="ChangeNotificationType();" value="保存" style="margin-left: 0;" />
+                <input type="button" onclick="NotificationTypeToggle(1);" value="取消" style="margin-left: 3px;" />
+                <br />
+                <span id="tip_NotificationType" class="text_red"></span>
+            </div>
+        </div>
     </div>
+</form>
+<div class="clear"></div>
 
-    <div id="vm" class="uk-width-1-1">
-        <table class="uk-table uk-table-hover">
-            <thead>
-                <tr>
-                    <th class="uk-width-4-10">名字</th>
-                    <th class="uk-width-4-10">电子邮件</th>
-                    <th class="uk-width-2-10">注册时间</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="user in users" >
-                    <td>
-                        <span v-text="user.name"></span>
-                        <span v-if="user.admin" style="color:#d05"><i class="uk-icon-key"></i> 管理员</span>
-                    </td>
-                    <td>
-                        <a v-bind:href="'mailto:'+user.email" v-text="user.email"></a>
-                    </td>
-                    <td>
-                        <span v-text="user.created_at.toDateTime()"></span>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div>{{ pagination('/manage/users?page=', page) }}</div>
+
+                </div>
+                <div id="right_sidebar">
+
+                </div>
+                <div class="clear"></div>
+            </div>
+            <div id="goTop">
+                <a href="javascript:void(0)" onclick="return gotoTop()">
+                    <img src="//common.cnblogs.com/images/ico_top.gif" alt="Top" title="回到页首" />
+                </a>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div id="footer">
+            <a href="//www.cnblogs.com/AboutUS.aspx">关于博客园</a>
+            <a href="//www.cnblogs.com/ContactUs.aspx">联系我们</a>
+            <a href="//www.cnblogs.com/ad.aspx">广告服务</a>
+            &copy; 2004-2019
+            <a href="//www.cnblogs.com">博客园</a>
+            <span>Powered by ASP.NET Core on Linux</span>
+            <span id="profiler_footer"></span>
+        </div>
     </div>
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date(); a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
-{% endblock %}
+        ga('create', 'UA-476124-14', 'auto');
+        ga('send', 'pageview');
+    </script>
+    <script src="//common.cnblogs.com/script/common.js?id=20160815"></script>
 
 
+        <script src="/js/home-mvc.min.js?v=onxvtb7Ewdaf-0ifuBuPFw9USRh5h33G5X_J9Z7SAYI"></script>
+
+    <script>
+        loadCurrentUserInfo();
+    </script>
+
+</body>
+</html>

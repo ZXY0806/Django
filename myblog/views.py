@@ -25,7 +25,7 @@ def index(request):
 class Register(View):
     def get(self, request):
         if request.session.get('is_login'):
-            return redirect('blog/index/')
+            return redirect(reverse('index'))
         return render(request, 'blog/register.html')
 
     def post(self, request):
@@ -319,7 +319,7 @@ class UploadPhoto(View):
 
 
 class AccountSet(View):
-    def get(self, request):
+    def get(self, request, username):
         if not request.session.get('is_login'):
             return redirect(reverse('login'))
         user = models.User.objects.get(pk=request.session.get('user_id'))
@@ -327,6 +327,102 @@ class AccountSet(View):
 
     def post(self, request):
         pass
+
+
+class UserName(View):
+    def get(self, request):
+        pass
+
+    def post(self, request):
+        if not request.session.get('is_login'):
+            return redirect(reverse('login'))
+        data = json.loads(request.body.decode())
+        new_username = data.get('username')
+        if new_username:
+            new_username = new_username.strip()
+        if not new_username:
+            res = {'error': 'bad-request', 'message': '用户名不能为空！'}
+            return JsonResponse(res)
+        if new_username == request.session.get('username'):
+            res = {'error': 'bad-request', 'message': '用户名与原用户名不能相同！'}
+            return JsonResponse(res)
+        same_name_user = models.User.objects.filter(username=new_username)
+        if same_name_user:
+            res = {'error': 'bad-request', 'message': '用户名已被注册！'}
+            return JsonResponse(res)
+        user = models.User.objects.get(pk=request.session.get('user_id'))
+        user.username = new_username
+        user.save()
+        request.session['username'] = new_username
+        res = {}
+        request.session.flush()
+        print('jin')
+        return JsonResponse(res)
+
+
+class Password(View):
+    def get(self, request):
+        pass
+
+    def post(self, request):
+        if not request.session.get('is_login'):
+            return redirect(reverse('login'))
+        data = json.loads(request.body.decode())
+        old_pwd = data.get('old_pwd', '').strip()
+        password1 = data.get('password1', '').strip()
+        password2 = data.get('password2', '').strip()
+        if not old_pwd or not password1 or not password2:
+            res = {'error': 'bad-request', 'message': '密码不能为空！'}
+            return JsonResponse(res)
+        if password1 != password2:
+            res = {'error': 'bad-request', 'message': '两次密码输入不同！'}
+            return JsonResponse(res)
+        user = models.User.objects.get(pk=request.session.get('user_id'))
+        hash_old_pwd = common.hash_it(old_pwd)
+        if hash_old_pwd != user.password:
+            res = {'error': 'bad-request', 'message': '旧密码输入错误！'}
+            return JsonResponse(res)
+        hash_new_pwd = common.hash_it(password1)
+        user.password = hash_new_pwd
+        user.save()
+        res = {}
+        request.session.flush()
+        return JsonResponse(res)
+
+
+class Email(View):
+    def get(self, request):
+        pass
+
+    def post(self, request):
+        if not request.session.get('is_login'):
+            return redirect(reverse('login'))
+        data = json.loads(request.body.decode())
+        password = data.get('password', '').strip()
+        new_email = data.get('email', '').strip()
+        if not password:
+            res = {'error': 'bad-request', 'message': '账户密码不能为空！'}
+            return JsonResponse(res)
+        if not new_email:
+            res = {'error': 'bad-request', 'message': '注册邮箱不能为空！'}
+            return JsonResponse(res)
+        same_email_user = models.User.objects.filter(email=new_email)
+        if same_email_user:
+            res = {'error': 'bad-request', 'message': '该邮箱已被注册！'}
+            return JsonResponse(res)
+        user = models.User.objects.get(pk=request.session.get('user_id'))
+        hash_password = common.hash_it(password)
+        if hash_password != user.password:
+            res = {'error': 'bad-request', 'message': '账户密码错误！'}
+            return JsonResponse(res)
+        user.email = new_email
+        user.has_confirmed = False
+        user.save()
+        confirm_code = common.generate_confirm_string(user)
+        common.send_confirm_email(confirm_code, new_email)
+        res = {}
+        request.session.flush()
+        return JsonResponse(res)
 
 
 def follow(request, username):

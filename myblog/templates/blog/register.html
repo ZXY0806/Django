@@ -67,8 +67,8 @@ $(function () {
                 $form.postJSON('{% url 'register' %}', {
                     username: this.name.trim(),
                     email: email,
-                    password1: sha1(this.name.trim() + ':' + this.password1).toString(),
-                    password2: sha1(this.name.trim() + ':' + this.password2).toString()
+                    password1: sha1(this.password1).toString(),
+                    password2: sha1(this.password2).toString()
                 }, function (err, r) {
                     if (err) {
                         return $form.showFormError(err);
